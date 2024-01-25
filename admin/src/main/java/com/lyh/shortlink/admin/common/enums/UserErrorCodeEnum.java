@@ -12,7 +12,11 @@ import com.lyh.shortlink.admin.common.convention.errorcode.IErrorCode;
 public enum UserErrorCodeEnum implements IErrorCode {
     USER_NULL("A000200","用户不存在"),
     USER_NAME_EXIST("A000201","用户名已存在"),
-    USER_SAVE_ERROR("B000202","用户记录新增失败");
+    USER_SAVE_ERROR("B000202","用户记录新增失败"),
+    USER_UPDATE_ERROR("B000203","用户记录修改失败"),
+    USER_LOGIN_ERROR("A000204","用户名或密码错误"),
+    USER_LOGIN_ALREADY("A000205","用户已登录"),
+    USER_NOT_LOGIN("A000206","用户未登录");
     private final String code;
 
     private final String message;

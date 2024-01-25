@@ -1,14 +1,19 @@
 package com.lyh.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.lyh.shortlink.admin.common.exception.ClientException;
 import com.lyh.shortlink.admin.dao.entity.UserDO;
 import com.lyh.shortlink.admin.dao.mapper.UserMapper;
+import com.lyh.shortlink.admin.dto.request.UserLoginReqDTO;
 import com.lyh.shortlink.admin.dto.request.UserRegisterReqDTO;
+import com.lyh.shortlink.admin.dto.request.UserUpdateReqDTO;
+import com.lyh.shortlink.admin.dto.response.UserLoginRespDTO;
 import com.lyh.shortlink.admin.dto.response.UserRespDTO;
 import com.lyh.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +21,13 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.*;
 
 /*
  *@title UserServiceImpl
@@ -32,6 +41,8 @@ import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.LOCK_US
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements UserService {
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
+    private final StringRedisTemplate stringRedisTemplate;
+
     @Override
     public UserRespDTO getUserByUserName(String username) {
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
@@ -41,8 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if (userDO != null) {
             BeanUtils.copyProperties(userDO, result);       // 此方法需要判空才可以，否则会报错
             return result;
-        }
-        else throw new ClientException(UserErrorCodeEnum.USER_NULL);
+        } else throw new ClientException(UserErrorCodeEnum.USER_NULL);
     }
 
     @Override
@@ -56,19 +66,68 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
         }
         //不加 requestParam.getUsername() 将变成全局锁
-        RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY+requestParam.getUsername());
+        RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
         try {
-            if(lock.tryLock()){
+            if (lock.tryLock()) {
                 int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
-                if(inserted<1){
+                if (inserted < 1) {
                     throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
                 }
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
                 return;
             }
             throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
-        }finally {
-             lock.unlock();
+        } finally {
+            lock.unlock();
         }
+    }
+
+    @Override
+    public void update(UserUpdateReqDTO requestParam) {
+        // TODO 验证当前用户名是否为登录用户
+        LambdaUpdateWrapper<UserDO> updateWrapper = Wrappers.lambdaUpdate(UserDO.class)
+                .eq(UserDO::getUsername, requestParam.getUsername());
+        int update = baseMapper.update(BeanUtil.toBean(requestParam, UserDO.class), updateWrapper);
+        if (update < 1) {
+            throw new ClientException(UserErrorCodeEnum.USER_UPDATE_ERROR);
+        }
+    }
+
+    @Override
+    public UserLoginRespDTO login(UserLoginReqDTO requestParam) {
+        LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+                .eq(UserDO::getUsername, requestParam.getUsername())
+                .eq(UserDO::getPassword, requestParam.getPassword())
+                .eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(queryWrapper);
+        if(userDO==null){
+            throw new ClientException(UserErrorCodeEnum.USER_LOGIN_ERROR);
+        }
+        Boolean hasLogin=stringRedisTemplate.hasKey(LOCK_TOKEN_KEY+requestParam.getUsername());
+        if(hasLogin!=null&&hasLogin){
+           throw new ClientException(UserErrorCodeEnum.USER_LOGIN_ALREADY);
+        }
+        /*
+         * Hash 结构存储
+         */
+        UUID uuid = UUID.randomUUID();
+        String token = uuid.toString().replace("-", "");
+        stringRedisTemplate.opsForHash().put(LOCK_TOKEN_KEY+requestParam.getUsername(),token, JSON.toJSONString(userDO));
+        stringRedisTemplate.expire(LOCK_TOKEN_KEY+requestParam.getUsername(),USER_TOKEN_TTL, TimeUnit.MINUTES);
+        return new UserLoginRespDTO(token);
+    }
+
+    @Override
+    public Boolean checkLogin(String username,String token) {
+        return stringRedisTemplate.opsForHash().get(LOCK_TOKEN_KEY+username,token)!=null;
+    }
+
+    @Override
+    public void logout(String username, String token) {
+        if(checkLogin(username,token)){
+            stringRedisTemplate.delete(LOCK_TOKEN_KEY+username);
+            return;
+        }
+        throw new ClientException(UserErrorCodeEnum.USER_NOT_LOGIN);
     }
 }

@@ -3,8 +3,11 @@ package com.lyh.shortlink.admin.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.lyh.shortlink.admin.common.convention.result.BaseResponse;
 import com.lyh.shortlink.admin.common.convention.result.Result;
+import com.lyh.shortlink.admin.dto.request.UserLoginReqDTO;
 import com.lyh.shortlink.admin.dto.request.UserRegisterReqDTO;
+import com.lyh.shortlink.admin.dto.request.UserUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.UserActualRespDTO;
+import com.lyh.shortlink.admin.dto.response.UserLoginRespDTO;
 import com.lyh.shortlink.admin.dto.response.UserRespDTO;
 import com.lyh.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +54,36 @@ public class UserController {
     public Result<Void>register(@RequestBody UserRegisterReqDTO requestParam){
         userService.register(requestParam);
         return BaseResponse.success();
+    }
+    /**
+     * 用户信息修改,不可修改用户名
+     */
+    @PutMapping(value = "/api/shortlink/user")
+    public Result<Void>update(@RequestBody UserUpdateReqDTO requestParam){
+        userService.update(requestParam);
+        return BaseResponse.success();
+    }
+    /**
+     * 用户登录
+     */
+    @PostMapping(value = "/api/shortlink/user/login")
+    public Result<UserLoginRespDTO>login(@RequestBody UserLoginReqDTO requestParam){
+        UserLoginRespDTO userLoginRespDTO = userService.login(requestParam);
+        return BaseResponse.success(userLoginRespDTO);
+    }
+    /**
+     * 检查用户是否登录
+     */
+    @GetMapping(value = "/api/shortlink/user/check-login")
+    public Result<Boolean>checkLogin(@RequestParam("username")String username,@RequestParam("token")String token){
+        return BaseResponse.success(userService.checkLogin(username,token));
+    }
+    /**
+     * 用户退出登录
+     */
+    @DeleteMapping(value = "/api/shortlink/user/logout")
+    public Result<Void>logout(@RequestParam("username")String username,@RequestParam("token")String token){
+         userService.logout(username,token);
+         return BaseResponse.success();
     }
 }

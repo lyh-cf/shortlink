@@ -13,6 +13,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.USER_NAME_BLOOMFILTER;
+
 /**
  * 布隆过滤器配置
  */
@@ -25,7 +27,7 @@ public class RBloomFilterConfiguration {
     @Bean
     public RBloomFilter<String> userRegisterCachePenetrationBloomFilter(RedissonClient redissonClient) {
         //默认没有，需要自定义
-        RBloomFilter<String> cachePenetrationBloomFilter = redissonClient.getBloomFilter("userRegisterCachePenetrationBloomFilter");
+        RBloomFilter<String> cachePenetrationBloomFilter = redissonClient.getBloomFilter(USER_NAME_BLOOMFILTER);
         /**
          * tryInit 有两个核心参数：
          * ● expectedInsertions：预估布隆过滤器存储的元素长度。
