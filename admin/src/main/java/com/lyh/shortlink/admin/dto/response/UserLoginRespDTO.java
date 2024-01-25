@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 /*
  *@title UserLoginRespDTO
- *@description 用户登录接口返回响应
+ *@description 用户登录接口返回实体
  *@author LYH
  *@version 1.0
  *@create 2024/1/25 15:34

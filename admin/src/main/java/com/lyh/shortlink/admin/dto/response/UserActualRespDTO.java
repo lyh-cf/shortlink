@@ -4,7 +4,7 @@ import lombok.Data;
 
 /*
  *@title UserActualRespDTO
- *@description
+ *@description 用户真实信息返回实体
  *@author LYH
  *@version 1.0
  *@create 2024/1/24 16:02

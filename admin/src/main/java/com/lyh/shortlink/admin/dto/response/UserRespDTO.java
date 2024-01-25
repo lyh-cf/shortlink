@@ -6,7 +6,7 @@ import lombok.Data;
 
 /*
  *@title UserRespDTO
- *@description 用户返回参数响应
+ *@description 用户脱敏信息返回实体
  *@author LYH
  *@version 1.0
  *@create 2024/1/23 22:27

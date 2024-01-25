@@ -1,5 +1,6 @@
 package com.lyh.shortlink.admin.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,10 +9,13 @@ import com.lyh.shortlink.admin.common.exception.ClientException;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSaveReqDTO;
+import com.lyh.shortlink.admin.dto.response.ShortLinkGroupRespDTO;
 import com.lyh.shortlink.admin.service.GroupService;
 import com.lyh.shortlink.admin.util.RandomGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
  *@title GroupServiceImpl
@@ -32,11 +36,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         GroupDO groupDO = GroupDO.builder()
                 .gid(gid)
                 .name(requestParam.getName())
+                .sortOrder(0)
                 .build();
         int inserted = baseMapper.insert(groupDO);
         if(inserted<1){
             throw new ClientException(GroupErrorCodeEnum.GROUP_SAVE_ERROR);
         }
+    }
+
+    @Override
+    public List<ShortLinkGroupRespDTO> getShortLinkGroupList() {
+        //TODO 获取用户名
+        LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
+                .eq(GroupDO::getDelFlag, 0)
+                .eq(GroupDO::getUsername, null)
+                .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
+        List<GroupDO>groupDOList=baseMapper.selectList(queryWrapper);
+        return BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
     }
 
     private Boolean hasGid(String gid) {
