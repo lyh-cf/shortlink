@@ -46,4 +46,12 @@ public class GroupController {
         groupService.updateGroup(requestParam);
         return BaseResponse.success();
     }
+    /**
+     * 删除短链接分组
+     */
+    @DeleteMapping(value = "/api/shortlink/group/{gid}")
+    public Result<Void>deleteGroup(@PathVariable("gid") String gid){
+        groupService.deleteGroup(gid);
+        return BaseResponse.success();
+    }
 }
