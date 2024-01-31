@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.LOCK_TOKEN_KEY;
 
@@ -27,12 +28,15 @@ public class UserTransmitFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        String username = httpServletRequest.getHeader("username");
-        String token = httpServletRequest.getHeader("token");
-        Object userInfoJsonStr = stringRedisTemplate.opsForHash().get(LOCK_TOKEN_KEY + username, token);
-        if(userInfoJsonStr!=null){
-            UserInfoDTO userInfoDTO = JSON.parseObject(userInfoJsonStr.toString(),UserInfoDTO.class);
-            UserContext.setUser(userInfoDTO);
+        String requestURL=httpServletRequest.getRequestURI();
+        if(!Objects.equals(requestURL,"/api/shortlink/user/login")){
+            String username = httpServletRequest.getHeader("username");
+            String token = httpServletRequest.getHeader("token");
+            Object userInfoJsonStr = stringRedisTemplate.opsForHash().get(LOCK_TOKEN_KEY + username, token);
+            if(userInfoJsonStr!=null){
+                UserInfoDTO userInfoDTO = JSON.parseObject(userInfoJsonStr.toString(),UserInfoDTO.class);
+                UserContext.setUser(userInfoDTO);
+            }
         }
         try {
             filterChain.doFilter(servletRequest, servletResponse);
@@ -40,4 +44,5 @@ public class UserTransmitFilter implements Filter {
             UserContext.removeUser();
         }
     }
+
 }
