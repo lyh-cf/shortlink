@@ -11,12 +11,18 @@ import com.lyh.shortlink.admin.common.exception.ClientException;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSaveReqDTO;
+import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSortReqDTO;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.ShortLinkGroupRespDTO;
 import com.lyh.shortlink.admin.service.GroupService;
 import com.lyh.shortlink.admin.util.RandomGenerator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -29,7 +35,10 @@ import java.util.List;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
+    private final TransactionTemplate transactionTemplate;
+
     @Override
     public void saveGroup(ShortLinkGroupSaveReqDTO requestParam) {
         String gid = RandomGenerator.generateRandom();
@@ -43,7 +52,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .sortOrder(0)
                 .build();
         int inserted = baseMapper.insert(groupDO);
-        if(inserted<1){
+        if (inserted < 1) {
             throw new ClientException(GroupErrorCodeEnum.GROUP_SAVE_ERROR);
         }
     }
@@ -55,7 +64,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .orderByDesc(GroupDO::getSortOrder)
                 .orderByDesc(GroupDO::getUpdateTime);
-        List<GroupDO>groupDOList=baseMapper.selectList(queryWrapper);
+        List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
         return BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
     }
 
@@ -65,11 +74,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .eq(GroupDO::getGid, requestParam.getGid())
                 .eq(GroupDO::getDelFlag, 0);
-        GroupDO groupDO= GroupDO.builder()
+        GroupDO groupDO = GroupDO.builder()
                 .name(requestParam.getName())
                 .build();
         int update = baseMapper.update(groupDO, updateWrapper);
-        if(update<1){
+        if (update < 1) {
             throw new ClientException(GroupErrorCodeEnum.GROUP_UPDATE_ERROR);
         }
     }
@@ -80,12 +89,39 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .eq(GroupDO::getGid, gid)
                 .eq(GroupDO::getDelFlag, 0);
-        GroupDO groupDO= new GroupDO();
+        GroupDO groupDO = new GroupDO();
         groupDO.setDelFlag(1);
         int update = baseMapper.update(groupDO, updateWrapper);
-        if(update<1){
+        if (update < 1) {
             throw new ClientException(GroupErrorCodeEnum.GROUP_DELETE_ERROR);
         }
+    }
+
+    @Override
+    @Transactional
+    public void sortGroup(List<ShortLinkGroupSortReqDTO> requestParam) {
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                try {
+                    requestParam.forEach(each -> {
+                        GroupDO groupDO = GroupDO.builder()
+                                .sortOrder(each.getSortOrder())
+                                .build();
+                        LambdaUpdateWrapper<GroupDO>updateWrapper=Wrappers.lambdaUpdate(GroupDO.class)
+                                .eq(GroupDO::getUsername, UserContext.getUsername())
+                                .eq(GroupDO::getGid, each.getGid())
+                                .eq(GroupDO::getDelFlag, 0);
+                        baseMapper.update(groupDO,updateWrapper);
+                    });
+                } catch (Exception e) {
+                    log.error(e.getCause().toString());
+                    //回滚
+                    transactionStatus.setRollbackOnly();
+                    throw new ClientException(GroupErrorCodeEnum.GROUP_SORT_ERROR);
+                }
+            }
+        });
     }
 
     private Boolean hasGid(String gid) {
