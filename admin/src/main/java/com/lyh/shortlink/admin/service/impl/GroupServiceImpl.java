@@ -2,6 +2,7 @@ package com.lyh.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.shortlink.admin.common.biz.user.UserContext;
@@ -10,6 +11,7 @@ import com.lyh.shortlink.admin.common.exception.ClientException;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSaveReqDTO;
+import com.lyh.shortlink.admin.dto.request.ShortLinkGroupUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.ShortLinkGroupRespDTO;
 import com.lyh.shortlink.admin.service.GroupService;
 import com.lyh.shortlink.admin.util.RandomGenerator;
@@ -55,6 +57,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .orderByDesc(GroupDO::getUpdateTime);
         List<GroupDO>groupDOList=baseMapper.selectList(queryWrapper);
         return BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
+    }
+
+    @Override
+    public void updateGroup(ShortLinkGroupUpdateReqDTO requestParam) {
+        LambdaUpdateWrapper<GroupDO> updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
+                .eq(GroupDO::getUsername, UserContext.getUsername())
+                .eq(GroupDO::getGid, requestParam.getGid())
+                .eq(GroupDO::getDelFlag, 0);
+        GroupDO groupDO= GroupDO.builder()
+                .name(requestParam.getName())
+                .build();
+        int update = baseMapper.update(groupDO, updateWrapper);
+        if(update<1){
+            throw new ClientException(GroupErrorCodeEnum.GROUP_UPDATE_ERROR);
+        }
     }
 
     private Boolean hasGid(String gid) {

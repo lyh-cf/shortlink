@@ -10,7 +10,8 @@ import com.lyh.shortlink.admin.common.convention.errorcode.IErrorCode;
  *@create 2024/1/25 22:13
  */
 public enum GroupErrorCodeEnum implements IErrorCode {
-    GROUP_SAVE_ERROR("B000300","短链接分组新增失败"),;
+    GROUP_SAVE_ERROR("B000300","短链接分组新增失败"),
+    GROUP_UPDATE_ERROR("B000301","短链接分组修改失败"),;
     private final String code;
 
     private final String message;

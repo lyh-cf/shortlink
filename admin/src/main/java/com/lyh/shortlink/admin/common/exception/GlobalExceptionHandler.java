@@ -63,7 +63,6 @@ public class GlobalExceptionHandler {
         log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex.toString());
         return BaseResponse.failure(ex);
     }
-
     /**
      * 拦截未捕获异常
      */
