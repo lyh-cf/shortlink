@@ -33,7 +33,7 @@ public class GroupController {
         return BaseResponse.success();
     }
     /**
-     * 短链接分组新增
+     * 查询短链接分组
      */
     @GetMapping(value = "/api/shortlink/getShortLinkGroupList")
     public Result<List<ShortLinkGroupRespDTO>>getShortLinkGroupList(){
