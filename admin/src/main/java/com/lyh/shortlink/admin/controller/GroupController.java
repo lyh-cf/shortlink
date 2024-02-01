@@ -26,7 +26,7 @@ public class GroupController {
     /**
      * 短链接分组新增
      */
-    @PostMapping(value = "/api/shortlink/group")
+    @PostMapping(value = "/api/shortlink/admin/group")
     public Result<Void>save(@RequestBody ShortLinkGroupSaveReqDTO requestParam){
         groupService.saveGroup(requestParam);
         return BaseResponse.success();
@@ -34,7 +34,7 @@ public class GroupController {
     /**
      * 查询短链接分组
      */
-    @GetMapping(value = "/api/shortlink/getShortLinkGroupList")
+    @GetMapping(value = "/api/shortlink/admin/getShortLinkGroupList")
     public Result<List<ShortLinkGroupRespDTO>>getShortLinkGroupList(){
         List<ShortLinkGroupRespDTO> shortLinkGroupList = groupService.getShortLinkGroupList();
         return BaseResponse.success(shortLinkGroupList);
@@ -42,7 +42,7 @@ public class GroupController {
     /**
      * 修改短链接分组名
      */
-    @PutMapping(value = "/api/shortlink/group")
+    @PutMapping(value = "/api/shortlink/admin/group")
     public Result<Void>updateGroup(@RequestBody ShortLinkGroupUpdateReqDTO requestParam){
         groupService.updateGroup(requestParam);
         return BaseResponse.success();
@@ -50,7 +50,7 @@ public class GroupController {
     /**
      * 删除短链接分组
      */
-    @DeleteMapping(value = "/api/shortlink/group/{gid}")
+    @DeleteMapping(value = "/api/shortlink/admin/group/{gid}")
     public Result<Void>deleteGroup(@PathVariable("gid") String gid){
         groupService.deleteGroup(gid);
         return BaseResponse.success();
@@ -58,7 +58,7 @@ public class GroupController {
     /**
      * 短链接分组排序
      */
-    @PostMapping(value = "/api/shortlink/group/sort")
+    @PostMapping(value = "/api/shortlink/admin/group/sort")
     public Result<Void>sortGroup(@RequestBody List<ShortLinkGroupSortReqDTO>requestParam){
         groupService.sortGroup(requestParam);
         return BaseResponse.success();

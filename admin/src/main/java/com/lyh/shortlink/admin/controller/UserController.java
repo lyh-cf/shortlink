@@ -29,28 +29,28 @@ public class UserController {
     /**
      * 根据用户名查询用户脱敏信息
      */
-    @GetMapping(value = "/api/shortlink/user/{username}")
+    @GetMapping(value = "/api/shortlink/admin/user/{username}")
     public Result<UserRespDTO> getUserByUserName(@PathVariable("username") String username) {
         return BaseResponse.success(userService.getUserByUserName(username));
     }
     /**
      * 根据用户名查询用户真实信息
      */
-    @GetMapping(value = "/api/shortlink/actual/user/{username}")
+    @GetMapping(value = "/api/shortlink/admin/actual/user/{username}")
     public Result<UserActualRespDTO> getActualUserByUserName(@PathVariable("username") String username) {
         return BaseResponse.success(BeanUtil.toBean(userService.getUserByUserName(username),UserActualRespDTO.class));
     }
     /**
      * 查询用户名是否存在
      */
-    @GetMapping(value = "/api/shortlink/user/has-username/{username}")
+    @GetMapping(value = "/api/shortlink/admin/user/has-username/{username}")
     public Result<Boolean>hasUserName(@PathVariable("username") String username){
         return BaseResponse.success(userService.hasUserName(username));
     }
     /**
      * 用户注册
      */
-    @PostMapping(value = "/api/shortlink/user")
+    @PostMapping(value = "/api/shortlink/admin/user")
     public Result<Void>register(@RequestBody UserRegisterReqDTO requestParam){
         userService.register(requestParam);
         return BaseResponse.success();
@@ -58,7 +58,7 @@ public class UserController {
     /**
      * 用户信息修改,不可修改用户名
      */
-    @PutMapping(value = "/api/shortlink/user")
+    @PutMapping(value = "/api/shortlink/admin/user")
     public Result<Void>update(@RequestBody UserUpdateReqDTO requestParam){
         userService.update(requestParam);
         return BaseResponse.success();
@@ -66,7 +66,7 @@ public class UserController {
     /**
      * 用户登录
      */
-    @PostMapping(value = "/api/shortlink/user/login")
+    @PostMapping(value = "/api/shortlink/admin/user/login")
     public Result<UserLoginRespDTO>login(@RequestBody UserLoginReqDTO requestParam){
         UserLoginRespDTO userLoginRespDTO = userService.login(requestParam);
         return BaseResponse.success(userLoginRespDTO);
@@ -74,14 +74,14 @@ public class UserController {
     /**
      * 检查用户是否登录
      */
-    @GetMapping(value = "/api/shortlink/user/check-login")
+    @GetMapping(value = "/api/shortlink/admin/user/check-login")
     public Result<Boolean>checkLogin(@RequestParam("username")String username,@RequestParam("token")String token){
         return BaseResponse.success(userService.checkLogin(username,token));
     }
     /**
      * 用户退出登录
      */
-    @DeleteMapping(value = "/api/shortlink/user/logout")
+    @DeleteMapping(value = "/api/shortlink/admin/user/logout")
     public Result<Void>logout(@RequestParam("username")String username,@RequestParam("token")String token){
          userService.logout(username,token);
          return BaseResponse.success();
