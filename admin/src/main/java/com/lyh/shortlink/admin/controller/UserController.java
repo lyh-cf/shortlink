@@ -43,8 +43,8 @@ public class UserController {
     /**
      * 查询用户名是否存在
      */
-    @GetMapping(value = "/api/shortlink/admin/user/has-username/{username}")
-    public Result<Boolean>hasUserName(@PathVariable("username") String username){
+    @GetMapping(value = "/api/shortlink/admin/user/has-username")
+    public Result<Boolean>hasUserName(@RequestParam("username") String username){
         return BaseResponse.success(userService.hasUserName(username));
     }
     /**
