@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.shortlink.admin.common.biz.user.UserContext;
 import com.lyh.shortlink.admin.common.enums.GroupErrorCodeEnum;
-import com.lyh.shortlink.admin.common.exception.ClientException;
+import com.lyh.shortlink.admin.common.convention.exception.ServiceException;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSaveReqDTO;
@@ -53,7 +53,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .build();
         int inserted = baseMapper.insert(groupDO);
         if (inserted < 1) {
-            throw new ClientException(GroupErrorCodeEnum.GROUP_SAVE_ERROR);
+            throw new ServiceException(GroupErrorCodeEnum.GROUP_SAVE_ERROR);
         }
     }
 
@@ -79,7 +79,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .build();
         int update = baseMapper.update(groupDO, updateWrapper);
         if (update < 1) {
-            throw new ClientException(GroupErrorCodeEnum.GROUP_UPDATE_ERROR);
+            throw new ServiceException(GroupErrorCodeEnum.GROUP_UPDATE_ERROR);
         }
     }
 
@@ -93,7 +93,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         groupDO.setDelFlag(1);
         int update = baseMapper.update(groupDO, updateWrapper);
         if (update < 1) {
-            throw new ClientException(GroupErrorCodeEnum.GROUP_DELETE_ERROR);
+            throw new ServiceException(GroupErrorCodeEnum.GROUP_DELETE_ERROR);
         }
     }
 
@@ -118,7 +118,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                     log.error(e.getCause().toString());
                     //回滚
                     transactionStatus.setRollbackOnly();
-                    throw new ClientException(GroupErrorCodeEnum.GROUP_SORT_ERROR);
+                    throw new ServiceException(GroupErrorCodeEnum.GROUP_SORT_ERROR);
                 }
             }
         });

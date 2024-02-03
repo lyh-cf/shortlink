@@ -9,7 +9,7 @@ package com.lyh.shortlink.admin.common.convention.result;
  */
 
 import com.lyh.shortlink.admin.common.convention.errorcode.BaseErrorCodeEnum;
-import com.lyh.shortlink.admin.common.exception.AbstractException;
+import com.lyh.shortlink.admin.common.convention.exception.AbstractException;
 
 import java.util.Optional;
 

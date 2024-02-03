@@ -7,7 +7,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.shortlink.admin.common.enums.UserErrorCodeEnum;
-import com.lyh.shortlink.admin.common.exception.ClientException;
+import com.lyh.shortlink.admin.common.convention.exception.ClientException;
+import com.lyh.shortlink.admin.common.convention.exception.ServiceException;
 import com.lyh.shortlink.admin.dao.entity.UserDO;
 import com.lyh.shortlink.admin.dao.mapper.UserMapper;
 import com.lyh.shortlink.admin.dto.request.UserLoginReqDTO;
@@ -71,7 +72,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             if (lock.tryLock()) {
                 int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
                 if (inserted < 1) {
-                    throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                    throw new ServiceException(UserErrorCodeEnum.USER_SAVE_ERROR);
                 }
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
                 return;
@@ -89,7 +90,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 .eq(UserDO::getUsername, requestParam.getUsername());
         int update = baseMapper.update(BeanUtil.toBean(requestParam, UserDO.class), updateWrapper);
         if (update < 1) {
-            throw new ClientException(UserErrorCodeEnum.USER_UPDATE_ERROR);
+            throw new ServiceException(UserErrorCodeEnum.USER_UPDATE_ERROR);
         }
     }
 

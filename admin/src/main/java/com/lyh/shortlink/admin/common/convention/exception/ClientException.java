@@ -1,4 +1,4 @@
-package com.lyh.shortlink.admin.common.exception;
+package com.lyh.shortlink.admin.common.convention.exception;
 
 /*
  *@title ClientException
