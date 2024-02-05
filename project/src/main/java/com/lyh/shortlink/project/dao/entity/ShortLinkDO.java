@@ -63,6 +63,10 @@ public class ShortLinkDO extends BaseDO implements Serializable {
      * 分组标识
      */
     private String gid;
+    /**
+     * 网站图标
+     */
+    private String favicon;
 
     /**
      * 启用标识 0：未启用 1：已启用
