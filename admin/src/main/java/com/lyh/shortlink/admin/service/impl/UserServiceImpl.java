@@ -22,6 +22,7 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -69,14 +70,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         //不加 requestParam.getUsername() 将变成全局锁
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
         try {
+            /**
+             * <b>并发请求</b>
+             */
             if (lock.tryLock()) {
-                int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
-                if (inserted < 1) {
-                    throw new ServiceException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                try {
+                    int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
+                    if (inserted < 1) {
+                        throw new ServiceException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                    }
+                    //唯一索引防止重复插入
+                } catch (DuplicateKeyException e) {
+                    throw new ServiceException(UserErrorCodeEnum.USER_NAME_EXIST);
                 }
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
                 return;
             }
+            /**
+             * <b>获取锁失败的线程</b>
+             */
             throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
         } finally {
             lock.unlock();
