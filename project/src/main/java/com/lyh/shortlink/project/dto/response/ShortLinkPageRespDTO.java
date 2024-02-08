@@ -13,7 +13,7 @@ import java.util.Date;
  *@create 2024/2/4 20:16
  */
 @Data
-public class ShorLinkPageRespDTO {
+public class ShortLinkPageRespDTO {
     /**
      * id
      */

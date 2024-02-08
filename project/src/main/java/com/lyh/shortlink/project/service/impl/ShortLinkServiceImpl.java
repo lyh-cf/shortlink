@@ -13,7 +13,8 @@ import com.lyh.shortlink.project.dao.entity.ShortLinkDO;
 import com.lyh.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.lyh.shortlink.project.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkPageReqDTO;
-import com.lyh.shortlink.project.dto.response.ShorLinkPageRespDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.project.service.ShortLinkService;
 import com.lyh.shortlink.project.util.HashUtil;
@@ -22,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
  *@title ShortLinkServiceImpl
@@ -52,7 +55,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .describe(requestParam.getDescribe())
                 .shortUri(shortLinkUri)
                 .fullShortUrl(fullShortUrl)
-                .enableStatus(1)
+                .enableStatus(0)
                 .build();
         try {
             baseMapper.insert(shortLinkDO);
@@ -70,14 +73,19 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     }
 
     @Override
-    public IPage<ShorLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 .eq(ShortLinkDO::getGid, requestParam.getGid())
-                .eq(ShortLinkDO::getEnableStatus, 1)
+                .eq(ShortLinkDO::getEnableStatus, 0)
                 .eq(ShortLinkDO::getDelFlag, 0)
                 .orderByDesc(ShortLinkDO::getCreateTime);
         IPage<ShortLinkDO> resultPage = baseMapper.selectPage(requestParam, queryWrapper);
-        return resultPage.convert(each-> BeanUtil.toBean(each,ShorLinkPageRespDTO.class));
+        return resultPage.convert(each-> BeanUtil.toBean(each, ShortLinkPageRespDTO.class));
+    }
+
+    @Override
+    public List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam) {
+        return null;
     }
 
     private String generateShortLinkUri(ShortLinkCreateReqDTO requestParam){
