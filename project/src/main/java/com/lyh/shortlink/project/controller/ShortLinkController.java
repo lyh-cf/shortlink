@@ -5,14 +5,14 @@ import com.lyh.shortlink.project.common.convention.result.BaseResponse;
 import com.lyh.shortlink.project.common.convention.result.Result;
 import com.lyh.shortlink.project.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkPageReqDTO;
-import com.lyh.shortlink.project.dto.response.ShorLinkPageRespDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.project.service.ShortLinkService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /*
  *@title ShortLinkController
@@ -38,7 +38,14 @@ public class ShortLinkController {
      */
     @GetMapping(value = "/api/shortlink/project/page")
     //get请求，它传递的是param（接在url后面），所以不拿@RequestBody接（请求体）
-    public Result<IPage<ShorLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
         return BaseResponse.success(shortLinkService.pageShortLink(requestParam));
+    }
+    /**
+     * 查询短链接分组内短链接数量
+     */
+    @GetMapping(value = "/api/shortlink/project/count")
+    public Result<List<ShortLinkGroupCountQueryRespDTO>>listGroupShortLinkCount(@RequestParam("requestParam") List<String>requestParam){
+          return BaseResponse.success(shortLinkService.listGroupShortLinkCount(requestParam));
     }
 }

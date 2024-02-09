@@ -38,6 +38,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLinkDO> implements ShortLinkService {
     private final RBloomFilter<String> shortUriCreateCachePenetrationBloomFilter;
+    private final ShortLinkMapper shortLinkMapper;
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         String shortLinkUri=generateShortLinkUri(requestParam);
@@ -85,7 +86,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     @Override
     public List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam) {
-        return null;
+        return shortLinkMapper.listGroupShortLinkCount(requestParam);
     }
 
     private String generateShortLinkUri(ShortLinkCreateReqDTO requestParam){

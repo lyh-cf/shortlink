@@ -7,7 +7,6 @@ import com.lyh.shortlink.admin.remote.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkPageReqDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShorLinkPageRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkCreateRespDTO;
-import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,15 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
  *@create 2024/2/5 21:09
  */
 @RestController
-@AllArgsConstructor
 public class ShortLinkController {
+    ShortLinkRemoteService shortLinkRemoteService=new ShortLinkRemoteService() {
+    };
     /**
      * 创建短链接
      */
     @PostMapping(value = "/api/shortlink/admin/create")
     public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO requestParam){
-        ShortLinkRemoteService shortLinkRemoteService=new ShortLinkRemoteService() {
-        };
         return shortLinkRemoteService.createShortLink(requestParam);
     }
     /**
@@ -38,8 +36,6 @@ public class ShortLinkController {
     @GetMapping(value = "/api/shortlink/admin/page")
     //get请求，它传递的是param（接在url后面），所以不拿@RequestBody接（请求体）
     public Result<IPage<ShorLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
-        ShortLinkRemoteService shortLinkRemoteService=new ShortLinkRemoteService() {
-        };
         return shortLinkRemoteService.pageShortLink(requestParam);
     }
 }

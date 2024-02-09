@@ -6,14 +6,16 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.shortlink.admin.common.biz.user.UserContext;
-import com.lyh.shortlink.admin.common.enums.GroupErrorCodeEnum;
 import com.lyh.shortlink.admin.common.convention.exception.ServiceException;
+import com.lyh.shortlink.admin.common.enums.GroupErrorCodeEnum;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSaveReqDTO;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSortReqDTO;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.ShortLinkGroupRespDTO;
+import com.lyh.shortlink.admin.remote.ShortLinkRemoteService;
+import com.lyh.shortlink.admin.remote.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.admin.service.GroupService;
 import com.lyh.shortlink.admin.util.RandomGenerator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  *@title GroupServiceImpl
@@ -38,6 +42,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
     private final TransactionTemplate transactionTemplate;
+    ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
+    };
 
     @Override
     public void saveGroup(ShortLinkGroupSaveReqDTO requestParam) {
@@ -65,7 +71,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .orderByDesc(GroupDO::getSortOrder)
                 .orderByDesc(GroupDO::getUpdateTime);
         List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
-        return BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
+        List<ShortLinkGroupCountQueryRespDTO> gids = shortLinkRemoteService.listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList()).getData();
+        List<ShortLinkGroupRespDTO> results = BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
+        Map<String, Integer> counts = gids.stream().collect(Collectors.toMap(ShortLinkGroupCountQueryRespDTO::getGid, ShortLinkGroupCountQueryRespDTO::getShortLinkCount));
+        return results.stream().peek(result -> result.setShortLinkCount(counts.getOrDefault(result.getGid(),0))).toList();
     }
 
     @Override
@@ -108,11 +117,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                         GroupDO groupDO = GroupDO.builder()
                                 .sortOrder(each.getSortOrder())
                                 .build();
-                        LambdaUpdateWrapper<GroupDO>updateWrapper=Wrappers.lambdaUpdate(GroupDO.class)
+                        LambdaUpdateWrapper<GroupDO> updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
                                 .eq(GroupDO::getUsername, UserContext.getUsername())
                                 .eq(GroupDO::getGid, each.getGid())
                                 .eq(GroupDO::getDelFlag, 0);
-                        baseMapper.update(groupDO,updateWrapper);
+                        baseMapper.update(groupDO, updateWrapper);
                     });
                 } catch (Exception e) {
                     log.error(e.getCause().toString());
