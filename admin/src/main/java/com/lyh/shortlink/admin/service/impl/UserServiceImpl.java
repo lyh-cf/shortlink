@@ -86,7 +86,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 }
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
                 //給用户创建默认分组
-                groupService.saveGroup("默认分组");
+                groupService.saveGroup(requestParam.getUsername(),"默认分组");
                 return;
             }
             /**
