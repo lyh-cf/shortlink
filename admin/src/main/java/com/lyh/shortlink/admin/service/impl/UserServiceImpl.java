@@ -16,6 +16,7 @@ import com.lyh.shortlink.admin.dto.request.UserRegisterReqDTO;
 import com.lyh.shortlink.admin.dto.request.UserUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.UserLoginRespDTO;
 import com.lyh.shortlink.admin.dto.response.UserRespDTO;
+import com.lyh.shortlink.admin.service.GroupService;
 import com.lyh.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
@@ -44,7 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
-
+    private final GroupService groupService;
     @Override
     public UserRespDTO getUserByUserName(String username) {
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
@@ -84,6 +85,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                     throw new ServiceException(UserErrorCodeEnum.USER_NAME_EXIST);
                 }
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+                //給用户创建默认分组
+                groupService.saveGroup("默认分组");
                 return;
             }
             /**

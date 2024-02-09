@@ -10,7 +10,6 @@ import com.lyh.shortlink.admin.common.convention.exception.ServiceException;
 import com.lyh.shortlink.admin.common.enums.GroupErrorCodeEnum;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
-import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSaveReqDTO;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSortReqDTO;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.ShortLinkGroupRespDTO;
@@ -46,14 +45,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
     };
 
     @Override
-    public void saveGroup(ShortLinkGroupSaveReqDTO requestParam) {
+    public void saveGroup(String groupName) {
         String gid = RandomGenerator.generateRandom();
         while (hasGid(gid)) {
             gid = RandomGenerator.generateRandom();
         }
         GroupDO groupDO = GroupDO.builder()
                 .gid(gid)
-                .name(requestParam.getName())
+                .name(groupName)
                 .username(UserContext.getUsername())
                 .sortOrder(0)
                 .build();
