@@ -5,6 +5,7 @@ import com.lyh.shortlink.project.common.convention.result.BaseResponse;
 import com.lyh.shortlink.project.common.convention.result.Result;
 import com.lyh.shortlink.project.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkPageReqDTO;
+import com.lyh.shortlink.project.dto.request.ShortLinkUpdateReqDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
@@ -32,6 +33,14 @@ public class ShortLinkController {
     public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO requestParam){
         ShortLinkCreateRespDTO shortLink = shortLinkService.createShortLink(requestParam);
         return BaseResponse.success(shortLink);
+    }
+    /**
+     * 修改短链接
+     */
+    @PutMapping(value = "/api/shortlink/project/update")
+    public Result<Void>updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam){
+        shortLinkService.updateShortLink(requestParam);
+        return BaseResponse.success();
     }
     /**
      * 分页查询短链接

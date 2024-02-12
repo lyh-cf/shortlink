@@ -5,9 +5,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyh.shortlink.project.dao.entity.ShortLinkDO;
 import com.lyh.shortlink.project.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkPageReqDTO;
+import com.lyh.shortlink.project.dto.request.ShortLinkUpdateReqDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
-import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
 
 import java.util.List;
 
@@ -24,6 +25,10 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      */
     ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam);
     /**
+     * 修改短链接
+     */
+    void updateShortLink(ShortLinkUpdateReqDTO requestParam);
+    /**
      * 分页查询短链接
      */
     IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam);
@@ -32,3 +37,4 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      */
     List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam);
 }
+

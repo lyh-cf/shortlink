@@ -12,7 +12,7 @@ import com.lyh.shortlink.project.common.convention.errorcode.IErrorCode;
  */
 public enum ShortLinkErrorCodeEnum implements IErrorCode {
     LINK_CREATE_FREQUENT_ERROR("B000400","短链接创建频繁，请稍后再试"),
-    ;
+    LINK_NULL("A000400","短链接记录不存在");
     private final String code;
 
     private final String message;
