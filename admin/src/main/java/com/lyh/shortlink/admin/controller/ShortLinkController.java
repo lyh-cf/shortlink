@@ -1,16 +1,15 @@
 package com.lyh.shortlink.admin.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.lyh.shortlink.admin.common.convention.result.BaseResponse;
 import com.lyh.shortlink.admin.common.convention.result.Result;
 import com.lyh.shortlink.admin.remote.ShortLinkRemoteService;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkPageReqDTO;
+import com.lyh.shortlink.admin.remote.dto.request.ShortLinkUpdateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShorLinkPageRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkCreateRespDTO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /*
  *@title ShortLinkController
@@ -29,6 +28,14 @@ public class ShortLinkController {
     @PostMapping(value = "/api/shortlink/admin/create")
     public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO requestParam){
         return shortLinkRemoteService.createShortLink(requestParam);
+    }
+    /**
+     * 修改短链接
+     */
+    @PutMapping(value = "/api/shortlink/admin/update")
+    public Result<Void>updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam){
+        shortLinkRemoteService.updateShortLink(requestParam);
+        return BaseResponse.success();
     }
     /**
      * 分页查询短链接

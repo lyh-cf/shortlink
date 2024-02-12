@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lyh.shortlink.admin.common.convention.result.Result;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkPageReqDTO;
+import com.lyh.shortlink.admin.remote.dto.request.ShortLinkUpdateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShorLinkPageRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkGroupCountQueryRespDTO;
@@ -26,11 +27,19 @@ public interface ShortLinkRemoteService {
     /**
      * 创建短链接
      */
-    default Result<ShortLinkCreateRespDTO> createShortLink(ShortLinkCreateReqDTO requestParam){
+    default Result<ShortLinkCreateRespDTO> createShortLink(ShortLinkCreateReqDTO requestParam) {
         String resultBodyStr = HttpUtil.post("http://127.0.0.1:8001/api/shortlink/project/create", JSON.toJSONString(requestParam));
         return JSON.parseObject(resultBodyStr, new TypeReference<>() {
         });
     }
+
+    /**
+     * 修改短链接
+     */
+    default void updateShortLink(ShortLinkUpdateReqDTO requestParam) {
+        HttpUtil.post("http://127.0.0.1:8001/api/shortlink/project/update", JSON.toJSONString(requestParam));
+    }
+
     /**
      * 分页查询短链接
      */
@@ -43,14 +52,17 @@ public interface ShortLinkRemoteService {
         return JSON.parseObject(resultPageStr, new TypeReference<>() {
         });
     }
+
     /**
      * 查询短链接分组内短链接数量
      */
     default Result<List<ShortLinkGroupCountQueryRespDTO>> listGroupShortLinkCount(List<String> requestParam) {
         Map<String, Object> requstMap = new HashMap<>();
-        requstMap.put("requestParam",requestParam);
+        requstMap.put("requestParam", requestParam);
         String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/shortlink/project/count", requstMap);
         return JSON.parseObject(resultPageStr, new TypeReference<>() {
         });
     }
+
+
 }
