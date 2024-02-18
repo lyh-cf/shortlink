@@ -9,6 +9,8 @@ import com.lyh.shortlink.project.dto.request.ShortLinkUpdateReqDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import java.util.List;
 
@@ -36,5 +38,9 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * 查询短链接分组内短链接数量
      */
     List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam);
+    /**
+     * 短链接跳转
+     */
+    void restoreUrl(String shortUri, ServletRequest request, ServletResponse response);
 }
 
