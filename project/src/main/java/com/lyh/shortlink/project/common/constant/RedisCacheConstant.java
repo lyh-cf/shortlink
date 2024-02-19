@@ -14,7 +14,7 @@ public class RedisCacheConstant {
     public static final String GOTO_SHORT_LINK_KEY = "shortlink:goto:%s";
     public static final String LOCK_GOTO_SHORT_LINK_KEY = "shortlink:lock:goto:%s";
     /**
-     * 永久短链接默认缓存有效时间，默认一个月
+     * 永久短链接默认缓存有效时间，默认一个月，单位毫秒
      */
     public static final long DEFAULT_CACHE_VALID_TIME = 2626560000L;
     /**

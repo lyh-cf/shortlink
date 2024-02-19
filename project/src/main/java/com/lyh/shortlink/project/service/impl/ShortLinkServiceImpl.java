@@ -25,6 +25,7 @@ import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
 import com.lyh.shortlink.project.service.ShortLinkService;
 import com.lyh.shortlink.project.util.HashUtil;
+import com.lyh.shortlink.project.util.LinkUtil;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -93,6 +94,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         } catch (DuplicateKeyException ex) {
             throw new ServiceException(String.format("短链接：%s 生成重复", fullShortUrl));
         }
+        //缓存预热
+        stringRedisTemplate.opsForValue().set(
+                String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
+                requestParam.getOriginUrl(),
+                LinkUtil.getLinkCacheValidTime(requestParam.getValidDate()), TimeUnit.MILLISECONDS
+        );
         //添加到布隆过滤器中
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLinkCreateRespDTO.builder()
@@ -210,7 +217,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             ((HttpServletResponse) response).sendRedirect(originalLink);
             return;
         }
-        //查看缓存中是否存在空值，若存在说明数据库中没有，直接返回
+        //查看缓存中是否存在空值，因为布隆过滤器存在误判
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
             ((HttpServletResponse) response).sendRedirect("/page/notfound");
@@ -244,7 +251,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 //重新建立缓存
                 stringRedisTemplate.opsForValue().set(
                         String.format(GOTO_SHORT_LINK_KEY,fullShortUrl),
-                        shortLinkDO.getOriginUrl(),DEFAULT_CACHE_VALID_TIME, TimeUnit.MILLISECONDS);
+                        shortLinkDO.getOriginUrl(),
+                        LinkUtil.getLinkCacheValidTime(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
                 ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
             }
         }finally {
