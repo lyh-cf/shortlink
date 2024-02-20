@@ -24,7 +24,7 @@ public class RecycleBinController {
     /**
      * 保存回收站
      */
-    @PostMapping("/api/shortlink/recycle-bin/save")
+    @PostMapping("/api/shortlink/project/recycle-bin/save")
     public Result<Void> saveRecycleBin(@RequestBody RecycleBinSaveReqDTO requestParam) {
         recycleBinService.saveRecycleBin(requestParam);
         return BaseResponse.success();

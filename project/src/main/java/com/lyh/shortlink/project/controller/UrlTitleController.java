@@ -24,7 +24,7 @@ public class UrlTitleController {
     /**
      * 根据 URL 获取对应网站的标题
      */
-    @GetMapping("/api/shortlink/title")
+    @GetMapping("/api/shortlink/project/title")
     public Result<String> getTitleByUrl(@RequestParam("url") String url) {
         return BaseResponse.success(urlTitleService.getTitleByUrl(url));
     }
