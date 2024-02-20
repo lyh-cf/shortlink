@@ -7,7 +7,7 @@ import com.lyh.shortlink.admin.remote.ShortLinkRemoteService;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkPageReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkUpdateReqDTO;
-import com.lyh.shortlink.admin.remote.dto.response.ShorLinkPageRespDTO;
+import com.lyh.shortlink.admin.remote.dto.response.ShortLinkPageRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkCreateRespDTO;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +42,7 @@ public class ShortLinkController {
      */
     @GetMapping(value = "/api/shortlink/admin/page")
     //get请求，它传递的是param（接在url后面），所以不拿@RequestBody接（请求体）
-    public Result<IPage<ShorLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
         return shortLinkRemoteService.pageShortLink(requestParam);
     }
 }

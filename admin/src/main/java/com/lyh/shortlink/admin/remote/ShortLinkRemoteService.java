@@ -8,9 +8,9 @@ import com.lyh.shortlink.admin.common.convention.result.Result;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkPageReqDTO;
 import com.lyh.shortlink.admin.remote.dto.request.ShortLinkUpdateReqDTO;
-import com.lyh.shortlink.admin.remote.dto.response.ShorLinkPageRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkGroupCountQueryRespDTO;
+import com.lyh.shortlink.admin.remote.dto.response.ShortLinkPageRespDTO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +43,7 @@ public interface ShortLinkRemoteService {
     /**
      * 分页查询短链接
      */
-    default Result<IPage<ShorLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    default Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         Map<String, Object> requstMap = new HashMap<>();
         requstMap.put("gid", requestParam.getGid());
         requstMap.put("current", requestParam.getCurrent());
@@ -64,5 +64,17 @@ public interface ShortLinkRemoteService {
         });
     }
 
+    /**
+     * 分页查询回收站短链接
+     */
+    default Result<IPage<ShortLinkPageRespDTO>> pageRecycleBinShortLink(List<String> gidList, Long current, Long size) {
+        Map<String, Object> requstMap = new HashMap<>();
+        requstMap.put("gidList", gidList);
+        requstMap.put("current", current);
+        requstMap.put("size", size);
+        String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/shortlink/project/recycle-bin/page", requstMap);
+        return JSON.parseObject(resultPageStr, new TypeReference<>() {
+        });
+    }
 
 }

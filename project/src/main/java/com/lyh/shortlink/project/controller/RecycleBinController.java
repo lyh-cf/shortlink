@@ -1,10 +1,14 @@
 package com.lyh.shortlink.project.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lyh.shortlink.project.common.convention.result.BaseResponse;
 import com.lyh.shortlink.project.common.convention.result.Result;
 import com.lyh.shortlink.project.dto.request.RecycleBinSaveReqDTO;
+import com.lyh.shortlink.project.dto.request.ShortLinkRecycleBinPageReqDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
 import com.lyh.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,5 +33,11 @@ public class RecycleBinController {
         recycleBinService.saveRecycleBin(requestParam);
         return BaseResponse.success();
     }
-
+    /**
+     * 分页查询回收站短链接
+     */
+    @GetMapping("/api/shortlink/project/recycle-bin/page")
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+        return BaseResponse.success(recycleBinService.pageShortLink(requestParam));
+    }
 }
