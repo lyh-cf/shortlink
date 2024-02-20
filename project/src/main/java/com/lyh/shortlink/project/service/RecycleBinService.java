@@ -2,6 +2,7 @@ package com.lyh.shortlink.project.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lyh.shortlink.project.dto.request.RecycleBinRecoverReqDTO;
+import com.lyh.shortlink.project.dto.request.RecycleBinRemoveReqDTO;
 import com.lyh.shortlink.project.dto.request.RecycleBinSaveReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkRecycleBinPageReqDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
@@ -33,4 +34,10 @@ public interface RecycleBinService {
      * @param requestParam 恢复短链接请求参数
      */
     void recoverRecycleBin(RecycleBinRecoverReqDTO requestParam);
+    /**
+     * 从回收站移除短链接
+     *
+     * @param requestParam 移除短链接请求参数
+     */
+    void removeRecycleBin(RecycleBinRemoveReqDTO requestParam);
 }
