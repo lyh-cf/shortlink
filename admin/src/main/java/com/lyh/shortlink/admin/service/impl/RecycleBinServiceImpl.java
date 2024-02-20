@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.lyh.shortlink.admin.common.biz.user.UserContext;
 import com.lyh.shortlink.admin.common.convention.exception.ServiceException;
 import com.lyh.shortlink.admin.common.convention.result.Result;
+import com.lyh.shortlink.admin.common.enums.GroupErrorCodeEnum;
 import com.lyh.shortlink.admin.dao.entity.GroupDO;
 import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.remote.ShortLinkRemoteService;
@@ -29,8 +30,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecycleBinServiceImpl implements RecycleBinService {
     private final GroupMapper groupMapper;
+
     ShortLinkRemoteService shortLinkRemoteService=new ShortLinkRemoteService() {
     };
+
     @Override
     public Result<IPage<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
@@ -38,7 +41,7 @@ public class RecycleBinServiceImpl implements RecycleBinService {
                 .eq(GroupDO::getDelFlag, 0);
         List<GroupDO> groupDOList = groupMapper.selectList(queryWrapper);
         if (CollUtil.isEmpty(groupDOList)) {
-            throw new ServiceException("用户无分组信息");
+            throw new ServiceException(GroupErrorCodeEnum.GROUP_USER_NULL);
         }
         requestParam.setGidList(groupDOList.stream().map(GroupDO::getGid).toList());
         return shortLinkRemoteService.pageRecycleBinShortLink(requestParam.getGidList(), requestParam.getCurrent(), requestParam.getSize());

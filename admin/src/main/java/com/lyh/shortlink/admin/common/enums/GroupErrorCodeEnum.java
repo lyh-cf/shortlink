@@ -13,7 +13,8 @@ public enum GroupErrorCodeEnum implements IErrorCode {
     GROUP_SAVE_ERROR("B000300","短链接分组新增失败"),
     GROUP_UPDATE_ERROR("B000301","短链接分组修改失败"),
     GROUP_DELETE_ERROR("B000302","短链接分组删除失败"),
-    GROUP_SORT_ERROR("B000303","短链接分组排序失败"),;
+    GROUP_SORT_ERROR("B000303","短链接分组排序失败"),
+    GROUP_USER_NULL("B000400","用户无分组信息");
     private final String code;
 
     private final String message;
