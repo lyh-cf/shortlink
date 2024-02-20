@@ -13,6 +13,11 @@ spring:
 #      password: 123456
 
 mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
   configuration:
     #开启mybatis-plus的日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
