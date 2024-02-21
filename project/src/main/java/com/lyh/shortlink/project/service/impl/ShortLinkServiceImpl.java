@@ -1,6 +1,8 @@
 package com.lyh.shortlink.project.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.Week;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.StrUtil;
@@ -13,8 +15,10 @@ import com.lyh.shortlink.project.common.convention.exception.ClientException;
 import com.lyh.shortlink.project.common.convention.exception.ServiceException;
 import com.lyh.shortlink.project.common.enums.ShortLinkErrorCodeEnum;
 import com.lyh.shortlink.project.common.enums.VailDateTypeEnum;
+import com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO;
 import com.lyh.shortlink.project.dao.entity.ShortLinkDO;
 import com.lyh.shortlink.project.dao.entity.ShortLinkGoToDO;
+import com.lyh.shortlink.project.dao.mapper.LinkAccessStatsMapper;
 import com.lyh.shortlink.project.dao.mapper.ShortLinkGoToMapper;
 import com.lyh.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.lyh.shortlink.project.dto.request.ShortLinkCreateReqDTO;
@@ -69,6 +73,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
     private final ShortLinkGoToMapper shortLinkGoToMapper;
+    private final LinkAccessStatsMapper linkAccessStatsMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -223,6 +228,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         //查看是否命中缓存
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(originalLink)) {
+            shortLinkStats(fullShortUrl, null, request, response);
             ((HttpServletResponse) response).sendRedirect(originalLink);
             return;
         }
@@ -238,6 +244,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         try {
             originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
             if (StrUtil.isNotBlank(originalLink)) {
+                shortLinkStats(fullShortUrl, null, request, response);
                 ((HttpServletResponse) response).sendRedirect(originalLink);
                 return;
             }
@@ -268,9 +275,37 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
                     shortLinkDO.getOriginUrl(),
                     LinkUtil.getLinkCacheValidTime(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
+            shortLinkStats(fullShortUrl, shortLinkDO.getGid(), request, response);
             ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void shortLinkStats(String fullShortUrl, String gid, ServletRequest request, ServletResponse response) {
+        try {
+            if (StrUtil.isBlank(gid)) {
+                LambdaQueryWrapper<ShortLinkGoToDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkGoToDO.class)
+                        .eq(ShortLinkGoToDO::getFullShortUrl, fullShortUrl);
+                ShortLinkGoToDO shortLinkGoToDO = shortLinkGoToMapper.selectOne(queryWrapper);
+                gid = shortLinkGoToDO.getGid();
+            }
+            int hour = DateUtil.hour(new Date(), true);
+            Week week = DateUtil.dayOfWeekEnum(new Date());
+            int weekValue = week.getIso8601Value();
+            LinkAccessStatsDO linkAccessStatsDO = LinkAccessStatsDO.builder()
+                    .pv(1)
+                    .uv(1)
+                    .uip(1)
+                    .hour(hour)
+                    .weekday(weekValue)
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(new Date())
+                    .build();
+            linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+        } catch (Throwable ex) {
+            log.error("短链接基础访问量统计异常", ex);
         }
     }
 
@@ -292,6 +327,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         return shortLinkUri;
     }
+
     @SneakyThrows
     private String getFavicon(String url) {
         URL targetUrl = new URL(url);
