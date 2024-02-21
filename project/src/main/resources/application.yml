@@ -31,3 +31,7 @@ logging:
   level:
     com.lyh.shortlink.project: debug
 
+shortlink:
+  stats:
+    locale:
+      amap-key: fdc5f3c48b2d743679e12ecc74065ea1
