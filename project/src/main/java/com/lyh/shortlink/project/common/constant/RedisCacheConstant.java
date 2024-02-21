@@ -30,4 +30,8 @@ public class RedisCacheConstant {
      * 短链接修改分组 ID 锁前缀 Key
      */
     public static final String LOCK_GID_UPDATE_KEY = "shortlink:lock:update-gid:%s";
+    /**
+     * 短链接统计判断是否新用户缓存标识
+     */
+    public static final String SHORT_LINK_STATS_UV_KEY = "shortlink:stats:uv:";
 }
