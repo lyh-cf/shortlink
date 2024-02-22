@@ -15,5 +15,10 @@ import java.util.List;
  *@create 2024/2/1 16:48
  */
 public interface ShortLinkMapper extends BaseMapper<ShortLinkDO> {
+    /**
+     * 查询短链接分组内短链接数量
+     * @param gids
+     * @return
+     */
     List<ShortLinkGroupCountQueryRespDTO>listGroupShortLinkCount(@Param("gids")List<String> gids);
 }
