@@ -2,4 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lyh.shortlink.project.dao.mapper.LinkAccessLogsMapper">
 
+    <select id="findPvUvUidStatsByShortLink"
+            resultType="com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT COUNT(user)          AS pv,
+               COUNT(DISTINCT user) AS uv,
+               COUNT(DISTINCT ip)   AS uip
+        FROM t_link_access_logs
+        WHERE full_short_url = #{param.fullShortUrl}
+          AND gid = #{param.gid}
+          AND create_time BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY full_short_url, gid;
+    </select>
+    <select id="listTopIpByShortLink" resultType="java.util.HashMap">
+        SELECT ip,
+               COUNT(ip) AS count
+        FROM
+            t_link_access_logs
+        WHERE
+            full_short_url = #{param.fullShortUrl}
+          AND gid = #{param.gid}
+          AND create_time BETWEEN #{param.startDate}
+          and #{param.endDate}
+        GROUP BY
+            full_short_url, gid, ip
+        ORDER BY
+            count DESC
+            LIMIT 5;
+    </select>
 </mapper>
