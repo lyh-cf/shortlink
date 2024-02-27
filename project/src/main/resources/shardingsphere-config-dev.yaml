@@ -40,10 +40,14 @@ rules:
         tableStrategy:
           # 用于单分片键的标准分片场景
           standard:
-            # 分片键
+            # 与 t_link 使用的是同一个分片键
             shardingColumn: gid
             # 分片算法，对应 rules[0].shardingAlgorithms
             shardingAlgorithmName: link_stats_today_table_hash_mod
+    #  绑定表，指分片规则一致的一组分片表。
+    #  使用绑定表进行多表关联查询时，必须使用分片键进行关联，否则会出现笛卡尔积关联或跨库关联，从而影响查询效率。
+    bindingTables:
+      - t_link, t_link_stats_today
     # 分片算法
     shardingAlgorithms:
       # 数据表分片算法
