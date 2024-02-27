@@ -269,6 +269,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .toList();
         //获取用户信息是否新老访客
         List<Map<String, Object>> uvTypeList = linkAccessLogsMapper.selectUvTypeByUsers(
+                //将参数拆开，单独传，如果直接传 requestParam 会被mybatis进行分页转换
                 requestParam.getGid(),
                 requestParam.getFullShortUrl(),
                 requestParam.getStartDate(),
