@@ -1,8 +1,11 @@
 package com.lyh.shortlink.project.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lyh.shortlink.project.common.convention.result.BaseResponse;
 import com.lyh.shortlink.project.common.convention.result.Result;
+import com.lyh.shortlink.project.dto.request.ShortLinkStatsAccessRecordReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkStatsReqDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkStatsAccessRecordRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkStatsRespDTO;
 import com.lyh.shortlink.project.service.ShortLinkStatsService;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +30,12 @@ public class ShortLinkStatsController {
     @GetMapping("/api/shortlink/project/stats")
     public Result<ShortLinkStatsRespDTO> shortLinkStats(ShortLinkStatsReqDTO requestParam) {
         return BaseResponse.success(shortLinkStatsService.oneShortLinkStats(requestParam));
+    }
+    /**
+     * 访问单个短链接指定时间内访问记录监控数据
+     */
+    @GetMapping("/api/shortlink/project/stats/access-record")
+    public Result<IPage<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
+        return BaseResponse.success(shortLinkStatsService.shortLinkStatsAccessRecord(requestParam));
     }
 }
