@@ -108,6 +108,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .fullShortUrl(fullShortUrl)
                 .favicon(getFavicon(requestParam.getOriginUrl()))
                 .enableStatus(0)
+                .totalPv(0)
+                .totalUv(0)
+                .totalUip(0)
                 .build();
         ShortLinkGoToDO linkGoToDO = ShortLinkGoToDO.builder()
                 .fullShortUrl(fullShortUrl)
