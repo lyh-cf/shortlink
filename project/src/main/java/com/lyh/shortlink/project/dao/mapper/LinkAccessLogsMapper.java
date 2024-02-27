@@ -33,7 +33,7 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
     /**
      * 获取用户信息是否新老访客
      */
-    @SuppressWarnings("MybatisXMapperMethodInspection")
+    @SuppressWarnings("MybatisXMapperMethodInspection")//忽略MybatisX插件提示@MapKey is required
     List<Map<String, Object>> selectUvTypeByUsers(
             @Param("gid") String gid,
             @Param("fullShortUrl") String fullShortUrl,
