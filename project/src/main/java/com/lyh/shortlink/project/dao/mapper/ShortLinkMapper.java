@@ -21,4 +21,14 @@ public interface ShortLinkMapper extends BaseMapper<ShortLinkDO> {
      * @return
      */
     List<ShortLinkGroupCountQueryRespDTO>listGroupShortLinkCount(@Param("gids")List<String> gids);
+    /**
+     * 短链接访问统计自增
+     */
+    void incrementStats(
+            @Param("gid") String gid,
+            @Param("fullShortUrl") String fullShortUrl,
+            @Param("totalPv") Integer totalPv,
+            @Param("totalUv") Integer totalUv,
+            @Param("totalUip") Integer totalUip
+    );
 }
