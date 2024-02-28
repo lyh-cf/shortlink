@@ -3,9 +3,11 @@ package com.lyh.shortlink.project.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyh.shortlink.project.dao.entity.ShortLinkDO;
+import com.lyh.shortlink.project.dto.request.ShortLinkBatchCreateReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkCreateReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkPageReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkUpdateReqDTO;
+import com.lyh.shortlink.project.dto.response.ShortLinkBatchCreateRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkCreateRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.project.dto.response.ShortLinkPageRespDTO;
@@ -26,6 +28,13 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * 创建短链接
      */
     ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam);
+    /**
+     * 批量创建短链接
+     *
+     * @param requestParam 批量创建短链接请求参数
+     * @return 批量创建短链接返回参数
+     */
+    ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam);
     /**
      * 修改短链接
      */
