@@ -10,7 +10,7 @@
         FROM t_link_access_logs
         WHERE full_short_url = #{param.fullShortUrl}
           AND gid = #{param.gid}
-          AND create_time BETWEEN #{param.startDate} and #{param.endDate}
+          AND DATE(create_time) BETWEEN #{param.startDate} and #{param.endDate}
         GROUP BY full_short_url, gid;
     </select>
     <select id="listTopIpByShortLink" resultType="java.util.HashMap">
@@ -19,7 +19,7 @@
         FROM t_link_access_logs
         WHERE full_short_url = #{param.fullShortUrl}
           AND gid = #{param.gid}
-          AND create_time BETWEEN #{param.startDate}
+          AND DATE(create_time) BETWEEN #{param.startDate}
             and #{param.endDate}
         GROUP BY full_short_url, gid, ip
         ORDER BY count DESC
@@ -32,7 +32,7 @@
         FROM (
             SELECT
                 CASE WHEN COUNT(DISTINCT DATE(create_time)) > 1 THEN 1 ELSE 0 END AS old_user,
-                CASE WHEN COUNT(DISTINCT DATE(create_time)) = 1 AND MAX(create_time) >= #{param.startDate} AND MAX(create_time) &lt;= #{param.endDate} THEN 1 ELSE 0 END AS new_user
+                CASE WHEN COUNT(DISTINCT DATE(create_time)) = 1 AND DATE(MAX(create_time)) >= #{param.startDate} AND DATE(MAX(create_time)) &lt;= #{param.endDate} THEN 1 ELSE 0 END AS new_user
             FROM
                 t_link_access_logs
             WHERE
@@ -46,7 +46,7 @@
         SELECT
             user,
             CASE
-                WHEN MIN(create_time) BETWEEN #{startDate} AND #{endDate} THEN '新访客'
+                WHEN DATE(MIN(create_time)) BETWEEN #{startDate} AND #{endDate} THEN '新访客'
                 ELSE '老访客'
             END AS uvType
         FROM
