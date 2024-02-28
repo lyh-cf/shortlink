@@ -50,4 +50,14 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
      * 根据分组获取指定日期内高频访问IP数据
      */
     List<HashMap<String, Object>> listTopIpByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
+
+    /**
+     * 获取分组用户信息是否新老访客
+     */
+    List<HashMap<String, Object>> selectGroupUvTypeByUsers(
+            @Param("gid") String gid,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("userAccessLogsList") List<String> userAccessLogsList
+    );
 }

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.lyh.shortlink.project.dao.entity.*;
 import com.lyh.shortlink.project.dao.mapper.*;
+import com.lyh.shortlink.project.dto.request.ShortLinkGroupStatsAccessRecordReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkGroupStatsReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkStatsAccessRecordReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkStatsReqDTO;
@@ -454,5 +455,43 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .deviceStats(deviceStats)
                 .networkStats(networkStats)
                 .build();
+    }
+
+    @Override
+    public IPage<ShortLinkStatsAccessRecordRespDTO> groupShortLinkStatsAccessRecord(ShortLinkGroupStatsAccessRecordReqDTO requestParam) {
+        LambdaQueryWrapper<LinkAccessLogsDO> queryWrapper = Wrappers.lambdaQuery(LinkAccessLogsDO.class)
+                .eq(LinkAccessLogsDO::getGid, requestParam.getGid())
+                .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate()+" 00:00:00", requestParam.getEndDate()+" 23:59:59")//空格不能省
+                .eq(LinkAccessLogsDO::getDelFlag, 0)
+                .orderByDesc(LinkAccessLogsDO::getCreateTime);
+        IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam, queryWrapper);
+        //bean转换
+        IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class));
+        //拿出user集合
+        List<String> userAccessLogsList = actualResult.getRecords().stream()
+                .map(ShortLinkStatsAccessRecordRespDTO::getUser)
+                .toList();
+        //防止空指针
+        if (CollUtil.isEmpty(userAccessLogsList)) {
+            return actualResult;
+        }
+        //获取用户信息是否新老访客
+        List<HashMap<String, Object>> uvTypeList = linkAccessLogsMapper.selectGroupUvTypeByUsers(
+                //将参数拆开，单独传，如果直接传 requestParam 会被mybatis进行分页转换
+                requestParam.getGid(),
+                requestParam.getStartDate(),
+                requestParam.getEndDate(),
+                userAccessLogsList
+        );
+        actualResult.getRecords().forEach(each -> {
+            String uvType = uvTypeList.stream()
+                    .filter(item -> Objects.equals(each.getUser(), item.get("user")))
+                    .findFirst()
+                    .map(item -> item.get("uvType"))
+                    .map(Object::toString)
+                    .orElse("旧访客");
+            each.setUvType(uvType);
+        });
+        return actualResult;
     }
 }
