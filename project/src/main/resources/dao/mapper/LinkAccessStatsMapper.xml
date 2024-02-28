@@ -51,4 +51,30 @@
         GROUP BY
             full_short_url, gid, weekday;
     </select>
+    <select id="listStatsByGroup" resultType="com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT date,
+               SUM(pv)  AS pv,
+               SUM(uv)  AS uv,
+               SUM(uip) AS uip
+        FROM t_link_access_stats
+        WHERE gid = #{param.gid}
+          AND date BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid, date;
+    </select>
+    <select id="listHourStatsByGroup" resultType="com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT hour,
+               SUM(pv) AS pv
+        FROM t_link_access_stats
+        WHERE gid = #{param.gid}
+          AND date BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid, hour;
+    </select>
+    <select id="listWeekdayStatsByGroup" resultType="com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT weekday,
+               SUM(pv) AS pv
+        FROM t_link_access_stats
+        WHERE gid = #{param.gid}
+          AND date BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid, weekday;
+    </select>
 </mapper>

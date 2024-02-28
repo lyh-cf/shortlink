@@ -61,4 +61,23 @@
         GROUP BY
             user;
     </select>
+    <select id="findPvUvUidStatsByGroup" resultType="com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT COUNT(user)          AS pv,
+               COUNT(DISTINCT user) AS uv,
+               COUNT(DISTINCT ip)   AS uip
+        FROM t_link_access_logs
+        WHERE gid = #{param.gid}
+          AND DATE(create_time) BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid;
+    </select>
+    <select id="listTopIpByGroup" resultType="java.util.HashMap">
+        SELECT ip,
+               COUNT(ip) AS count
+        FROM t_link_access_logs
+        WHERE gid = #{param.gid}
+          AND DATE(create_time) BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid, ip
+        ORDER BY count DESC
+        LIMIT 5;
+    </select>
 </mapper>

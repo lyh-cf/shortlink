@@ -21,4 +21,12 @@
         GROUP BY
             full_short_url, gid, device;
     </select>
+    <select id="listDeviceStatsByGroup" resultType="com.lyh.shortlink.project.dao.entity.LinkDeviceStatsDO">
+        SELECT device,
+               SUM(cnt) AS cnt
+        FROM t_link_device_stats
+        WHERE gid = #{param.gid}
+          AND date BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid, device;
+    </select>
 </mapper>

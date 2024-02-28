@@ -2,6 +2,7 @@ package com.lyh.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lyh.shortlink.project.dao.entity.LinkNetworkStatsDO;
+import com.lyh.shortlink.project.dto.request.ShortLinkGroupStatsReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +25,8 @@ public interface LinkNetworkStatsMapper extends BaseMapper<LinkNetworkStatsDO> {
      */
     List<LinkNetworkStatsDO> listNetworkStatsByShortLink(@Param("param") ShortLinkStatsReqDTO requestParam);
 
+    /**
+     * 根据分组获取指定日期内访问网络监控数据
+     */
+    List<LinkNetworkStatsDO> listNetworkStatsByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
 }

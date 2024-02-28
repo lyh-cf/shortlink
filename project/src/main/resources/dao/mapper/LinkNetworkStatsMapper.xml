@@ -21,4 +21,12 @@
         GROUP BY
             full_short_url, gid, network;
     </select>
+    <select id="listNetworkStatsByGroup" resultType="com.lyh.shortlink.project.dao.entity.LinkNetworkStatsDO">
+        SELECT network,
+               SUM(cnt) AS cnt
+        FROM t_link_network_stats
+        WHERE gid = #{param.gid}
+          AND date BETWEEN #{param.startDate} and #{param.endDate}
+        GROUP BY gid, network;
+    </select>
 </mapper>
