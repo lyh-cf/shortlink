@@ -257,7 +257,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         LambdaQueryWrapper<LinkAccessLogsDO> queryWrapper = Wrappers.lambdaQuery(LinkAccessLogsDO.class)
                 .eq(LinkAccessLogsDO::getGid, requestParam.getGid())
                 .eq(LinkAccessLogsDO::getFullShortUrl, requestParam.getFullShortUrl())
-                .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate(), requestParam.getEndDate())
+                .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate()+" 00:00:00", requestParam.getEndDate()+" 23:59:59")//空格不能省
                 .eq(LinkAccessLogsDO::getDelFlag, 0)
                 .orderByDesc(LinkAccessLogsDO::getCreateTime);
         IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam, queryWrapper);
