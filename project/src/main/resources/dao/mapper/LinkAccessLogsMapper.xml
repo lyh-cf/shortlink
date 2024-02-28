@@ -42,7 +42,7 @@
                 user
         ) AS user_counts;
     </select>
-    <select id="selectUvTypeByUsers" resultType="java.util.Map">
+    <select id="selectUvTypeByUsers" resultType="java.util.HashMap">
         SELECT
             user,
             CASE

@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /*
  *@title LinkAccessLogsMapper
@@ -34,8 +33,7 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
     /**
      * 获取用户信息是否新老访客
      */
-    @SuppressWarnings("MybatisXMapperMethodInspection")//忽略MybatisX插件提示@MapKey is required
-    List<Map<String, Object>> selectUvTypeByUsers(
+    List<HashMap<String, Object>> selectUvTypeByUsers(
             @Param("gid") String gid,
             @Param("fullShortUrl") String fullShortUrl,
             @Param("startDate") String startDate,
