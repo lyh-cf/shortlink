@@ -13,7 +13,7 @@
     <select id="listGroupShortLinkCount"
             resultType="com.lyh.shortlink.project.dto.response.ShortLinkGroupCountQueryRespDTO">
         SELECT gid, COUNT(*) as shortLinkCount FROM `t_link`
-        WHERE enable_status = 0 AND del_flag=0 AND gid IN
+        WHERE enable_status = 0 AND del_flag=0 AND del_time=0 AND gid IN
         <foreach collection="gids" item="gid" open="(" separator="," close=")">
             #{gid}
         </foreach>
