@@ -21,6 +21,7 @@ import com.lyh.shortlink.project.common.convention.exception.ClientException;
 import com.lyh.shortlink.project.common.convention.exception.ServiceException;
 import com.lyh.shortlink.project.common.enums.ShortLinkErrorCodeEnum;
 import com.lyh.shortlink.project.common.enums.VailDateTypeEnum;
+import com.lyh.shortlink.project.config.GotoDomainBlackListConfiguration;
 import com.lyh.shortlink.project.dao.entity.*;
 import com.lyh.shortlink.project.dao.mapper.*;
 import com.lyh.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
@@ -64,6 +65,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.lyh.shortlink.project.common.constant.RedisCacheConstant.*;
 import static com.lyh.shortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
+import static com.lyh.shortlink.project.common.enums.ShortLinkErrorCodeEnum.ILLEGAL_LINK_ERROR;
+import static com.lyh.shortlink.project.common.enums.ShortLinkErrorCodeEnum.LINK_FILL_ERROR;
 
 /*
  *@title ShortLinkServiceImpl
@@ -91,6 +94,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkStatsTodayMapper linkStatsTodayMapper;
     private final LinkStatsTodayService linkStatsTodayService;
     private final DelayShortLinkStatsProducer delayShortLinkStatsProducer;
+    private final GotoDomainBlackListConfiguration gotoDomainBlackListConfiguration;
+
     @Value("${shortlink.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
     @Value("${shortlink.domain.default}")
@@ -98,6 +103,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
+        verificationWhitelist(requestParam.getOriginUrl());
         String shortLinkUri = generateShortLinkUri(requestParam);
         String fullShortUrl = StrBuilder.create(createShortLinkDefaultDomain)
                 .append("/")
@@ -178,6 +184,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateShortLink(ShortLinkUpdateReqDTO requestParam) {
+        verificationWhitelist(requestParam.getOriginUrl());
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 .eq(ShortLinkDO::getGid, requestParam.getOriginGid())
                 .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
@@ -593,7 +600,20 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .network(network)
                 .build();
     }
-
+    private void verificationWhitelist(String originUrl) {
+        Boolean enable = gotoDomainBlackListConfiguration.getEnable();
+        if (enable == null || !enable) {
+            return;
+        }
+        String domain = LinkUtil.extractDomain(originUrl);
+        if (StrUtil.isBlank(domain)) {
+            throw new ClientException(LINK_FILL_ERROR);
+        }
+        List<String> details = gotoDomainBlackListConfiguration.getDetails();
+        if (details.contains(domain)) {
+            throw new ClientException(ILLEGAL_LINK_ERROR);
+        }
+    }
     private String generateShortLinkUri(ShortLinkCreateReqDTO requestParam) {
         int customGenerateCount = 0;//生成次数
         String shortLinkUri;

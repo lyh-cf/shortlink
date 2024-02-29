@@ -37,3 +37,9 @@ shortlink:
   stats:
     locale:
       amap-key: fdc5f3c48b2d743679e12ecc74065ea1
+  goto-domain:
+    black-list:
+      enable: true
+      names: '米哈游'
+      details:
+        - mihoyo.com
