@@ -15,4 +15,8 @@ public class RedisCacheConstant {
      public static final String LOCK_USER_REGISTER_KEY="shortlink:lock:user-register:";
      public static final String USER_LOGIN_TOKEN_KEY="shortlink:user-login:";
      public static final int USER_TOKEN_TTL=30;
+     /**
+      * 分组创建分布式锁
+      */
+     public static final String LOCK_GROUP_CREATE_KEY = "shortlink:lock:group-create:%s";
 }

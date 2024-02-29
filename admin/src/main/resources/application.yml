@@ -27,3 +27,6 @@ mybatis-plus:
 logging:
   level:
     com.lyh.shortlink.admin: debug
+shortlink:
+  group:
+    max-num: 20

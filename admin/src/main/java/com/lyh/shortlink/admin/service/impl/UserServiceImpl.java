@@ -121,7 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if(userDO==null){
             throw new ClientException(UserErrorCodeEnum.USER_LOGIN_ERROR);
         }
-        Map<Object ,Object> hasLoginMap = stringRedisTemplate.opsForHash().entries(LOCK_TOKEN_KEY + requestParam.getUsername());
+        Map<Object ,Object> hasLoginMap = stringRedisTemplate.opsForHash().entries(USER_LOGIN_TOKEN_KEY + requestParam.getUsername());
         if (CollUtil.isNotEmpty(hasLoginMap)) {
             String token = hasLoginMap.keySet().stream()
                     .findFirst()
@@ -134,20 +134,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
          */
         UUID uuid = UUID.randomUUID();
         String token = uuid.toString().replace("-", "");
-        stringRedisTemplate.opsForHash().put(LOCK_TOKEN_KEY+requestParam.getUsername(),token, JSON.toJSONString(userDO));
-        stringRedisTemplate.expire(LOCK_TOKEN_KEY+requestParam.getUsername(),USER_TOKEN_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForHash().put(USER_LOGIN_TOKEN_KEY+requestParam.getUsername(),token, JSON.toJSONString(userDO));
+        stringRedisTemplate.expire(USER_LOGIN_TOKEN_KEY+requestParam.getUsername(),USER_TOKEN_TTL, TimeUnit.MINUTES);
         return new UserLoginRespDTO(token);
     }
 
     @Override
     public Boolean checkLogin(String username,String token) {
-        return stringRedisTemplate.opsForHash().get(LOCK_TOKEN_KEY+username,token)!=null;
+        return stringRedisTemplate.opsForHash().get(USER_LOGIN_TOKEN_KEY+username,token)!=null;
     }
 
     @Override
     public void logout(String username, String token) {
         if(checkLogin(username,token)){
-            stringRedisTemplate.delete(LOCK_TOKEN_KEY+username);
+            stringRedisTemplate.delete(USER_LOGIN_TOKEN_KEY+username);
             return;
         }
         throw new ClientException(UserErrorCodeEnum.USER_NOT_LOGIN);
