@@ -9,7 +9,10 @@ package com.lyh.shortlink.admin.common.constant;
  */
 public class RedisCacheConstant {
      public static final String USER_NAME_BLOOMFILTER="shortlink:bloom-filter:username-filter";
+     /**
+      * 用户注册分布式锁
+      */
      public static final String LOCK_USER_REGISTER_KEY="shortlink:lock:user-register:";
-     public static final String LOCK_TOKEN_KEY="shortlink:user-login:";
+     public static final String USER_LOGIN_TOKEN_KEY="shortlink:user-login:";
      public static final int USER_TOKEN_TTL=30;
 }
