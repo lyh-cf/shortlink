@@ -74,10 +74,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
             if (CollUtil.isNotEmpty(groupDOList) && groupDOList.size() == groupMaxNum) {
                 throw new ClientException(String.format("已超出最大分组数：%d", groupMaxNum));
             }
-            String gid;
-            do {
+            String gid = RandomGenerator.generateRandom();
+            while (hasGid(username,gid)) {
                 gid = RandomGenerator.generateRandom();
-            } while (!hasGid(username, gid));
+            }
             GroupDO groupDO = GroupDO.builder()
                     .gid(gid)
                     .sortOrder(0)
