@@ -12,6 +12,9 @@ public class RedisCacheConstant {
      * 短链接跳转前缀 Key
      */
     public static final String GOTO_SHORT_LINK_KEY = "shortlink:goto:%s";
+    /**
+     * 短链接跳转锁前缀 Key
+     */
     public static final String LOCK_GOTO_SHORT_LINK_KEY = "shortlink:lock:goto:%s";
     /**
      * 永久短链接默认缓存有效时间，默认一个月，单位毫秒
@@ -20,7 +23,7 @@ public class RedisCacheConstant {
     /**
      * 短链接空值跳转前缀 Key
      */
-    public static final String GOTO_IS_NULL_SHORT_LINK_KEY = "shortlink:is-null:goto_%s";
+    public static final String GOTO_IS_NULL_SHORT_LINK_KEY = "shortlink:is-null:goto:%s";
     /**
      * 短链接布隆过滤器
      */
@@ -33,7 +36,7 @@ public class RedisCacheConstant {
     /**
      * 短链接延迟队列消费统计 Key
      */
-    public static final String DELAY_QUEUE_STATS_KEY = "short-link_delay-queue:stats";
+    public static final String DELAY_QUEUE_STATS_KEY = "shortlink:delay-queue:stats";
     /**
      * 短链接统计判断是否新用户缓存标识
      */
@@ -42,4 +45,13 @@ public class RedisCacheConstant {
      * 短链接统计判断是否新 IP 缓存标识
      */
     public static final String SHORT_LINK_STATS_UIP_KEY = "shortlink:stats:uip:";
+    /**
+     * 短链接监控消息保存队列 Topic 缓存标识
+     */
+    public static final String SHORT_LINK_STATS_STREAM_TOPIC_KEY = "shortlink:stats-stream";
+
+    /**
+     * 短链接监控消息保存队列 Group 缓存标识
+     */
+    public static final String SHORT_LINK_STATS_STREAM_GROUP_KEY = "shortlink:stats-stream:only-group";
 }

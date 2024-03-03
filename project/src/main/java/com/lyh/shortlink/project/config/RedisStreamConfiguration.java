@@ -2,7 +2,6 @@ package com.lyh.shortlink.project.config;
 
 import com.lyh.shortlink.project.mq.consumer.ShortLinkStatsSaveConsumer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -18,6 +17,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.lyh.shortlink.project.common.constant.RedisCacheConstant.SHORT_LINK_STATS_STREAM_GROUP_KEY;
+import static com.lyh.shortlink.project.common.constant.RedisCacheConstant.SHORT_LINK_STATS_STREAM_TOPIC_KEY;
+
 /*
  *@title RedisStreamConfiguration
  *@description Redis Stream 消息队列配置
@@ -33,10 +36,6 @@ public class RedisStreamConfiguration {
     //redis消费者，需要去绑定
     private final ShortLinkStatsSaveConsumer shortLinkStatsSaveConsumer;
 
-    @Value("${spring.data.redis.channel-topic.short-link-stats}")
-    private String topic;
-    @Value("${spring.data.redis.channel-topic.short-link-stats-group}")
-    private String group;
     //创建一个线程池，如果不指定消费者就会用默认的线程池
     @Bean
     public ExecutorService asyncStreamConsumer() {
@@ -70,8 +69,8 @@ public class RedisStreamConfiguration {
                         .build();
         StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer =
                 StreamMessageListenerContainer.create(redisConnectionFactory, options);
-        streamMessageListenerContainer.receiveAutoAck(Consumer.from(group, "stats-consumer"),
-                StreamOffset.create(topic, ReadOffset.lastConsumed()), shortLinkStatsSaveConsumer);
+        streamMessageListenerContainer.receiveAutoAck(Consumer.from(SHORT_LINK_STATS_STREAM_GROUP_KEY, "stats-consumer"),
+                StreamOffset.create(SHORT_LINK_STATS_STREAM_TOPIC_KEY, ReadOffset.lastConsumed()), shortLinkStatsSaveConsumer);
         return streamMessageListenerContainer;
     }
 }
