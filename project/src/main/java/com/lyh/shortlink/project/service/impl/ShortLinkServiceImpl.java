@@ -96,7 +96,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
-        verificationWhitelist(requestParam.getOriginUrl());
+        verificationBlackList(requestParam.getOriginUrl());
         String shortLinkUri = generateShortLinkUri(requestParam);
         String fullShortUrl = StrBuilder.create(createShortLinkDefaultDomain)
                 .append("/")
@@ -177,7 +177,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateShortLink(ShortLinkUpdateReqDTO requestParam) {
-        verificationWhitelist(requestParam.getOriginUrl());
+        verificationBlackList(requestParam.getOriginUrl());
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 .eq(ShortLinkDO::getGid, requestParam.getOriginGid())
                 .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
@@ -488,7 +488,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .network(network)
                 .build();
     }
-    private void verificationWhitelist(String originUrl) {
+    private void verificationBlackList(String originUrl) {
         Boolean enable = gotoDomainBlackListConfiguration.getEnable();
         if (enable == null || !enable) {
             return;
