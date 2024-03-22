@@ -8,7 +8,6 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.lyh.shortlink.project.common.convention.exception.ServiceException;
 import com.lyh.shortlink.project.dao.entity.*;
 import com.lyh.shortlink.project.dao.mapper.*;
 import com.lyh.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
@@ -66,12 +65,7 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
         String stream = message.getStream();
         RecordId id = message.getId();
         if (!messageQueueIdempotentHandler.isMessageProcessed(id.toString())) {
-            // 如果当前这个消息消费过
-            // 判断当前的这个消息流程是否执行完成
-            if (messageQueueIdempotentHandler.isAccomplish(id.toString())) {
-                return;
-            }
-            throw new ServiceException("消息未完成流程，需要消息队列重试");
+            return;
         }
         try {
             Map<String, String> producerMap = message.getValue();
@@ -81,15 +75,13 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                 ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
                 actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
             }
-            //消费完之后就删除该消息
+            //TODO 消费完之后就删除该消息，因为这里是使用redis实现的，留着占内存，实际上不用的
             stringRedisTemplate.opsForStream().delete(Objects.requireNonNull(stream), id.getValue());
         } catch (Throwable ex) {
             // 某某某情况宕机了
             messageQueueIdempotentHandler.delMessageProcessed(id.toString());
             log.error("记录短链接监控消费异常", ex);
         }
-        //设置消息幂等标识表示消息执行完成
-        messageQueueIdempotentHandler.setAccomplish(id.toString());
     }
 
     public void actualSaveShortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO statsRecord) {
