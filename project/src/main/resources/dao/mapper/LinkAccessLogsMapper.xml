@@ -31,8 +31,17 @@
             SUM(new_user) AS newUserCnt
         FROM (
             SELECT
-                CASE WHEN COUNT(DISTINCT DATE(create_time)) > 1 THEN 1 ELSE 0 END AS old_user,
-                CASE WHEN COUNT(DISTINCT DATE(create_time)) = 1 AND DATE(MAX(create_time)) >= #{param.startDate} AND DATE(MAX(create_time)) &lt;= #{param.endDate} THEN 1 ELSE 0 END AS new_user
+                CASE
+                    WHEN DATE(MIN(create_time)) &lt; #{param.startDate}
+                        THEN 1
+                    ELSE 0
+                    END AS old_user,
+                CASE
+                    WHEN DATE(MIN(create_time)) >= #{param.startDate}
+                             AND DATE(MIN(create_time)) &lt;= #{param.endDate}
+                        THEN 1
+                    ELSE 0
+                    END AS new_user
             FROM
                 t_link_access_logs
             WHERE
