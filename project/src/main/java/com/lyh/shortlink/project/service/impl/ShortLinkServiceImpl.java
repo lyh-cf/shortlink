@@ -450,7 +450,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         Runnable addResponseCookieTask = () -> {
             uv.set(UUID.fastUUID().toString());
             Cookie uvCookie = new Cookie("uv", uv.get());
-            uvCookie.setMaxAge(60 * 60 * 24 * 30);
+            uvCookie.setMaxAge(60 * 60 * 24);
             uvCookie.setPath(StrUtil.sub(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
             ((HttpServletResponse) response).addCookie(uvCookie);
             uvFirstFlag.set(Boolean.TRUE);
@@ -505,17 +505,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private String generateShortLinkUri(ShortLinkCreateReqDTO requestParam) {
         int customGenerateCount = 0;//生成次数
         String shortLinkUri;
+        String originUrl = requestParam.getOriginUrl();
         while (true) {
             if (customGenerateCount > 10) {
                 throw new ServiceException(ShortLinkErrorCodeEnum.LINK_CREATE_FREQUENT_ERROR);
             }
-            String originUrl = requestParam.getOriginUrl();
-            //降低hash冲突概率
-            originUrl += UUID.randomUUID().toString();
             shortLinkUri = HashUtil.hashToBase62(originUrl);
             if (!shortUriCreateCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain + "/" + shortLinkUri)) {
                 break;
             }
+            //业务上允许原始链接重复，以及即使不一样的原始链接也可能会发生 Hash 冲突
+            //所以在发生hash冲突之后我们拼接UUID来解决冲突
+            originUrl += UUID.randomUUID().toString();
             customGenerateCount++;
         }
         return shortLinkUri;
