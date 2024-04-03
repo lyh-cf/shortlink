@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lyh.shortlink.admin.common.biz.user.UserContext;
 import com.lyh.shortlink.admin.common.convention.exception.ClientException;
 import com.lyh.shortlink.admin.common.convention.exception.ServiceException;
 import com.lyh.shortlink.admin.common.enums.UserErrorCodeEnum;
@@ -29,10 +30,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.*;
+import static com.lyh.shortlink.admin.common.enums.UserErrorCodeEnum.USER_UPDATE_EXCEPTION;
 
 /*
  *@title UserServiceImpl
@@ -48,6 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final GroupService groupService;
+
     @Override
     public UserRespDTO getUserByUserName(String username) {
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
@@ -72,29 +76,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         }
         //不加 requestParam.getUsername() 将变成全局锁
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
+        if (!lock.tryLock()) {
+            throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
+        }
         try {
-            /**
-             * <b>并发请求</b>
-             */
-            if (lock.tryLock()) {
-                try {
-                    int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
-                    if (inserted < 1) {
-                        throw new ServiceException(UserErrorCodeEnum.USER_SAVE_ERROR);
-                    }
-                    //唯一索引防止重复插入
-                } catch (DuplicateKeyException e) {
-                    throw new ServiceException(UserErrorCodeEnum.USER_NAME_EXIST);
+            try {
+                int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
+                if (inserted < 1) {
+                    throw new ServiceException(UserErrorCodeEnum.USER_SAVE_ERROR);
                 }
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
                 //給用户创建默认分组
-                groupService.saveGroup(requestParam.getUsername(),"默认分组");
-                return;
+                groupService.saveGroup(requestParam.getUsername(), "默认分组");
+                //唯一索引防止重复插入
+            } catch (DuplicateKeyException e) {
+                throw new ServiceException(UserErrorCodeEnum.USER_NAME_EXIST);
             }
-            /**
-             * <b>获取锁失败的线程</b>
-             */
-            throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
         } finally {
             lock.unlock();
         }
@@ -118,10 +115,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 .eq(UserDO::getPassword, requestParam.getPassword())
                 .eq(UserDO::getDelFlag, 0);
         UserDO userDO = baseMapper.selectOne(queryWrapper);
-        if(userDO==null){
+        if (userDO == null) {
             throw new ClientException(UserErrorCodeEnum.USER_LOGIN_ERROR);
         }
-        Map<Object ,Object> hasLoginMap = stringRedisTemplate.opsForHash().entries(USER_LOGIN_TOKEN_KEY + requestParam.getUsername());
+        Map<Object, Object> hasLoginMap = stringRedisTemplate.opsForHash().entries(USER_LOGIN_TOKEN_KEY + requestParam.getUsername());
         if (CollUtil.isNotEmpty(hasLoginMap)) {
             String token = hasLoginMap.keySet().stream()
                     .findFirst()
@@ -134,20 +131,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
          */
         UUID uuid = UUID.randomUUID();
         String token = uuid.toString().replace("-", "");
-        stringRedisTemplate.opsForHash().put(USER_LOGIN_TOKEN_KEY+requestParam.getUsername(),token, JSON.toJSONString(userDO));
-        stringRedisTemplate.expire(USER_LOGIN_TOKEN_KEY+requestParam.getUsername(),USER_TOKEN_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForHash().put(USER_LOGIN_TOKEN_KEY + requestParam.getUsername(), token, JSON.toJSONString(userDO));
+        stringRedisTemplate.expire(USER_LOGIN_TOKEN_KEY + requestParam.getUsername(), USER_TOKEN_TTL, TimeUnit.MINUTES);
         return new UserLoginRespDTO(token);
     }
 
     @Override
-    public Boolean checkLogin(String username,String token) {
-        return stringRedisTemplate.opsForHash().get(USER_LOGIN_TOKEN_KEY+username,token)!=null;
+    public Boolean checkLogin(String username, String token) {
+        return stringRedisTemplate.opsForHash().get(USER_LOGIN_TOKEN_KEY + username, token) != null;
     }
 
     @Override
     public void logout(String username, String token) {
-        if(checkLogin(username,token)){
-            stringRedisTemplate.delete(USER_LOGIN_TOKEN_KEY+username);
+        if (checkLogin(username, token)) {
+            stringRedisTemplate.delete(USER_LOGIN_TOKEN_KEY + username);
             return;
         }
         throw new ClientException(UserErrorCodeEnum.USER_NOT_LOGIN);
