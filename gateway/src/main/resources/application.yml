@@ -1,2 +1,37 @@
 server:
-  port: 8000
+  port: 8003
+spring:
+  application:
+    name: short-link-gateway
+  data:
+    redis:
+      host: 114.132.246.22
+      port: 6379
+      password: PHRmUcd6ZpM0506N1wldC9EKsix77VA8HwMHloLJPZtxSkMnRfEKSn8SYpvcaI5
+  cloud:
+    nacos:
+      server-addr: 114.132.246.22:8848
+      # 注册
+      discovery:
+        namespace: short_link
+        group: short-link-gateway
+    gateway:
+      #路由
+      routes:
+        - id: short-link-admin
+          uri: lb://short-link-admin/api/shortlink/admin/**
+          #转发
+          predicates:
+            - Path=/api/shortlink/admin/**
+          filters:
+            - name: TokenValidate
+              args:
+                whitePathList:
+                  - /api/shortlink/admin/user/login
+                  - /api/shortlink/admin/user/has-username
+        - id: short-link-project
+          uri: lb://short-link-project/api/shortlink/**
+          predicates:
+            - Path=/api/shortlink/**
+          filters:
+            - name: TokenValidate
