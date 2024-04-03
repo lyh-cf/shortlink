@@ -35,6 +35,16 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   #告知映射文件的位置
   mapper-locations: classpath*:/dao/mapper/**/*.xml
+rocketmq:
+  name-server: 114.132.246.22:9876
+  producer:
+    group: shortlink_project-service_stats-save_pg
+    topic: shortlink_project-service_topic
+    send-message-timeout: 2000
+    retry-times-when-send-failed: 1
+    retry-times-when-send-async-failed: 1
+  consumer:
+    group: shortlink_project-service_stats-save_cg
 
 logging:
   level:

@@ -8,23 +8,25 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.lyh.shortlink.project.common.convention.exception.ServiceException;
 import com.lyh.shortlink.project.dao.entity.*;
 import com.lyh.shortlink.project.dao.mapper.*;
 import com.lyh.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
 import com.lyh.shortlink.project.mq.idempotent.MessageQueueIdempotentHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.RecordId;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.lyh.shortlink.project.common.constant.RedisCacheConstant.LOCK_GID_UPDATE_KEY;
 import static com.lyh.shortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
@@ -39,7 +41,12 @@ import static com.lyh.shortlink.project.common.constant.ShortLinkConstant.AMAP_R
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRecord<String, String, String>> {
+@RocketMQMessageListener(
+        topic = "${rocketmq.producer.topic}",
+        consumerGroup = "${rocketmq.consumer.group}"
+)
+//序列化的时候也需要以Map的形式
+public class ShortLinkStatsSaveConsumer implements RocketMQListener<Map<String, String>> {
 
     private final ShortLinkMapper shortLinkMapper;
     private final ShortLinkGoToMapper shortLinkGoToMapper;
@@ -52,34 +59,34 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final LinkStatsTodayMapper linkStatsTodayMapper;
-    private final StringRedisTemplate stringRedisTemplate;
     private final MessageQueueIdempotentHandler messageQueueIdempotentHandler;
 
     @Value("${shortlink.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
 
     @Override
-    public void onMessage(MapRecord<String, String, String> message) {
-        String stream = message.getStream();
-        RecordId id = message.getId();
-        if (!messageQueueIdempotentHandler.isMessageProcessed(id.toString())) {
-            return;
+    public void onMessage(Map<String, String> producerMap) {
+        //幂等标识
+        String keys = producerMap.get("keys");
+        if (!messageQueueIdempotentHandler.isMessageProcessed(keys)) {
+            // 判断当前的这个消息流程是否执行完成
+            if (messageQueueIdempotentHandler.isAccomplish(keys)) {
+                return;
+            }
+            throw new ServiceException("消息未完成流程，需要消息队列重试");
         }
         try {
-            Map<String, String> producerMap = message.getValue();
             String fullShortUrl = producerMap.get("fullShortUrl");
             if (StrUtil.isNotBlank(fullShortUrl)) {
                 String gid = producerMap.get("gid");
                 ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
                 actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
             }
-            //TODO 消费完之后就删除该消息，因为这里是使用redis实现的，留着占内存，实际上不用的
-            stringRedisTemplate.opsForStream().delete(Objects.requireNonNull(stream), id.getValue());
         } catch (Throwable ex) {
-            // 某某某情况宕机了
-            messageQueueIdempotentHandler.delMessageProcessed(id.toString());
             log.error("记录短链接监控消费异常", ex);
+            throw ex;
         }
+        messageQueueIdempotentHandler.setAccomplish(keys);
     }
 
     public void actualSaveShortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO statsRecord) {
