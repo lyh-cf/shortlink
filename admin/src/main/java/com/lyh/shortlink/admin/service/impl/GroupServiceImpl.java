@@ -15,7 +15,7 @@ import com.lyh.shortlink.admin.dao.mapper.GroupMapper;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupSortReqDTO;
 import com.lyh.shortlink.admin.dto.request.ShortLinkGroupUpdateReqDTO;
 import com.lyh.shortlink.admin.dto.response.ShortLinkGroupRespDTO;
-import com.lyh.shortlink.admin.remote.ShortLinkRemoteService;
+import com.lyh.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.lyh.shortlink.admin.remote.dto.response.ShortLinkGroupCountQueryRespDTO;
 import com.lyh.shortlink.admin.service.GroupService;
 import com.lyh.shortlink.admin.util.RandomGenerator;
@@ -50,13 +50,9 @@ import static com.lyh.shortlink.admin.common.constant.RedisCacheConstant.LOCK_GR
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
     private final TransactionTemplate transactionTemplate;
     private final RedissonClient redissonClient;
-
+    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
     @Value("${shortlink.group.max-num}")
     private Integer groupMaxNum;
-
-    ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
-    };
-
     @Override
     public void saveGroup(String groupName) {
         this.saveGroup(UserContext.getUsername(),groupName);
@@ -101,7 +97,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .orderByDesc(GroupDO::getSortOrder)
                 .orderByDesc(GroupDO::getUpdateTime);
         List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
-        List<ShortLinkGroupCountQueryRespDTO> gids = shortLinkRemoteService.listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList()).getData();
+        List<ShortLinkGroupCountQueryRespDTO> gids = shortLinkActualRemoteService.listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList()).getData();
         List<ShortLinkGroupRespDTO> results = BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
         Map<String, Integer> counts = gids.stream().collect(Collectors.toMap(ShortLinkGroupCountQueryRespDTO::getGid, ShortLinkGroupCountQueryRespDTO::getShortLinkCount));
         return results.stream().peek(result -> result.setShortLinkCount(counts.getOrDefault(result.getGid(),0))).toList();
