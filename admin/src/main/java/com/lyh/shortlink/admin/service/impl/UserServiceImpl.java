@@ -99,7 +99,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     @Override
     public void update(UserUpdateReqDTO requestParam) {
-        // TODO 验证当前用户名是否为登录用户
+        if(!Objects.equals(requestParam.getUsername(), UserContext.getUsername())){
+            throw new ClientException(USER_UPDATE_EXCEPTION);
+        }
         LambdaUpdateWrapper<UserDO> updateWrapper = Wrappers.lambdaUpdate(UserDO.class)
                 .eq(UserDO::getUsername, requestParam.getUsername());
         int update = baseMapper.update(BeanUtil.toBean(requestParam, UserDO.class), updateWrapper);
