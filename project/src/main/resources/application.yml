@@ -23,7 +23,6 @@ spring:
       # 注册
       discovery:
         namespace: short_link
-        group: short-link-project
 mybatis-plus:
   global-config:
     db-config:

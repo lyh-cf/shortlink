@@ -19,7 +19,6 @@ spring:
       # 注册
       discovery:
         namespace: short_link
-        group: short-link-admin
 mybatis-plus:
   global-config:
     db-config:

@@ -14,7 +14,6 @@ spring:
       # 注册
       discovery:
         namespace: short_link
-        group: short-link-gateway
     gateway:
       #路由
       routes:
