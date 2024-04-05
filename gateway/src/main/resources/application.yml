@@ -18,7 +18,7 @@ spring:
       #路由
       routes:
         - id: short-link-admin
-          uri: lb://short-link-admin/api/shortlink/admin/**
+          uri: lb://short-link-admin
           #转发
           predicates:
             - Path=/api/shortlink/admin/**
@@ -29,7 +29,7 @@ spring:
                   - /api/shortlink/admin/user/login
                   - /api/shortlink/admin/user/has-username
         - id: short-link-project
-          uri: lb://short-link-project/api/shortlink/**
+          uri: lb://short-link-project
           predicates:
             - Path=/api/shortlink/**
           filters:
