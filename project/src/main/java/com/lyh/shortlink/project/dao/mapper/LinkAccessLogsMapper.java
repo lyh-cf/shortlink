@@ -1,8 +1,10 @@
 package com.lyh.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lyh.shortlink.project.dao.entity.LinkAccessLogsDO;
 import com.lyh.shortlink.project.dao.entity.LinkAccessStatsDO;
+import com.lyh.shortlink.project.dto.request.ShortLinkGroupStatsAccessRecordReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkGroupStatsReqDTO;
 import com.lyh.shortlink.project.dto.request.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Param;
@@ -36,6 +38,7 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
     List<HashMap<String, Object>> selectUvTypeByUsers(
             @Param("gid") String gid,
             @Param("fullShortUrl") String fullShortUrl,
+            @Param("enableStatus") Integer enableStatus,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate,
             @Param("userAccessLogsList") List<String> userAccessLogsList
@@ -60,4 +63,5 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
             @Param("endDate") String endDate,
             @Param("userAccessLogsList") List<String> userAccessLogsList
     );
+    IPage<LinkAccessLogsDO> selectGroupPage(@Param("param") ShortLinkGroupStatsAccessRecordReqDTO requestParam);
 }
