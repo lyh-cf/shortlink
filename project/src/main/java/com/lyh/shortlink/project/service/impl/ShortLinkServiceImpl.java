@@ -375,11 +375,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         Runnable addResponseCookieTask = () -> {
             uv.set(UUID.fastUUID().toString());
             Cookie uvCookie = new Cookie("uv", uv.get());
-            uvCookie.setMaxAge(60 * 60 * 24);
+            uvCookie.setMaxAge(60 * 60 * 24 * 30);
             uvCookie.setPath(StrUtil.sub(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
             ((HttpServletResponse) response).addCookie(uvCookie);
             uvFirstFlag.set(Boolean.TRUE);
-            stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, uv.get());
+            stringRedisTemplate.opsForHyperLogLog().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, uv.get());
         };
         if (ArrayUtil.isNotEmpty(cookies)) {
             Arrays.stream(cookies)
@@ -388,8 +388,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .map(Cookie::getValue)
                     .ifPresentOrElse(each -> {
                         uv.set(each);
-                        Long uvAdded = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, each);
-                        uvFirstFlag.set(uvAdded != null && uvAdded > 0L);
+                        //返回 0 说明已存在，基数未变化；返回 1 说明不存在，基数增加；
+                        Long uvAdded = stringRedisTemplate.opsForHyperLogLog().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, each);
+                        uvFirstFlag.set(uvAdded > 0L);
                     }, addResponseCookieTask);
         } else {
             addResponseCookieTask.run();
@@ -399,8 +400,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         String browser = LinkUtil.getBrowser(((HttpServletRequest) request));
         String device = LinkUtil.getDevice(((HttpServletRequest) request));
         String network = LinkUtil.getNetwork(((HttpServletRequest) request));
-        Long uipAdded = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UIP_KEY + fullShortUrl, remoteAddr);
-        boolean uipFirstFlag = uipAdded != null && uipAdded > 0L;
+        //返回 0 说明已存在，基数未变化；返回 1 说明不存在，基数增加；
+        Long uipAdded = stringRedisTemplate.opsForHyperLogLog().add(SHORT_LINK_STATS_UIP_KEY + fullShortUrl, remoteAddr);
+        boolean uipFirstFlag = uipAdded > 0L;
         return ShortLinkStatsRecordDTO.builder()
                 .fullShortUrl(fullShortUrl)
                 .uv(uv.get())
