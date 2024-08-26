@@ -55,11 +55,6 @@ public class ShortLinkDO extends BaseDO implements Serializable {
     private String originUrl;
 
     /**
-     * 点击量
-     */
-    private Integer clickNum;
-
-    /**
      * 分组标识
      */
     private String gid;

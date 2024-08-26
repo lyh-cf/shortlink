@@ -44,7 +44,7 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
     List<LinkAccessStatsDO> listHourStatsByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
 
     /**
-     * 根据分组获取指定日期内小时基础监控数据
+     * 根据分组获取指定日期内星期基础监控数据
      */
     List<LinkAccessStatsDO> listWeekdayStatsByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
 }
