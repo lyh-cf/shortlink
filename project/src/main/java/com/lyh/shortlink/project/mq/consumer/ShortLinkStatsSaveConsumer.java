@@ -67,7 +67,7 @@ public class ShortLinkStatsSaveConsumer implements RocketMQListener<Map<String, 
     public void onMessage(Map<String, String> producerMap) {
         //幂等标识
         String keys = producerMap.get("keys");
-        if (!messageQueueIdempotentHandler.isMessageProcessed(keys)) {
+        if (!messageQueueIdempotentHandler.isMessageBeingConsumed(keys)) {
             // 判断当前的这个消息流程是否执行完成
             if (messageQueueIdempotentHandler.isAccomplish(keys)) {
                 return;
